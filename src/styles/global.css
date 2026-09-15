@@ -1,0 +1,80 @@
+/* ─── Reset & Tokens ─────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;
+  --green:#39d353;--cyan:#58a6ff;--purple:#bc8cff;
+  --orange:#ffa657;--red:#f85149;--muted:#8b949e;
+  --border:#30363d;--white:#e6edf3;
+  --glow-green:rgba(57,211,83,0.15);
+  --glow-cyan:rgba(88,166,255,0.15);
+  --radius:10px;
+}
+html{scroll-behavior:initial;}
+body{
+  background:var(--bg);color:var(--white);
+  font-family:'Space Grotesk',sans-serif;overflow-x:hidden;cursor:none;
+}
+
+/* ─── Cursor fallback ────────────────────────────────────────────
+   Every cursor:none in this codebase assumes the JS-driven custom
+   cursor (see Layout.astro) is actually running. It isn't on touch
+   devices, with prefers-reduced-motion, or before/if that script
+   fails — so keep the native cursor visible until JS confirms it's
+   safe to hide it by adding .has-custom-cursor to <html>. */
+html:not(.has-custom-cursor) *{cursor:auto!important;}
+html:not(.has-custom-cursor) .cursor,
+html:not(.has-custom-cursor) .cursor-ring{display:none;}
+
+/* ─── Focus states ───────────────────────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible{
+  outline:2px solid var(--cyan);
+  outline-offset:3px;
+  border-radius:4px;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────
+   Covers every CSS animation/transition on the site (pulse dots,
+   blinking cursor, floating icons, hover transitions, reveal-on-
+   scroll). The two JS-driven motion loops this can't reach — Lenis
+   smooth-scroll and the projects marquee auto-scroll — check the
+   same media query themselves (Layout.astro, Projects.astro). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Noise texture overlay ──────────────────────────────────── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:0.025;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+
+/* ─── Animations ─────────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1),transform 0.8s cubic-bezier(0.16,1,0.3,1);}
+.reveal.on{opacity:1;transform:none;}
+@keyframes blink{0%,100%{opacity:.9;}50%{opacity:0;}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+
+/* ─── Section base ───────────────────────────────────────────── */
+section{padding:88px 40px;position:relative;z-index:1;}
+.sec-header{margin-bottom:52px;}
+.sec-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+.sec-title{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1.5px;}
+.sec-sub{font-size:16px;color:var(--muted);margin-top:10px;max-width:480px;line-height:1.65;}
+
+@media(max-width:640px){
+  section{padding:64px 16px;}
+}

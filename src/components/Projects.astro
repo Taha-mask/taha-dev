@@ -1,0 +1,323 @@
+---
+const projects = [
+  /* ── GitHub projects ── */
+  {title:'Flick',
+   desc:'Flutter movie discovery app with a clean multi-screen architecture — reusable card widgets, smooth transitions, and responsive Material Design layouts.',
+   tags:['flutter','dart'],cat:'flutter',status:'live',preview:'flutter',icon:'<i class="bx bx-movie-play"></i>',
+   gh:'https://github.com/Taha-mask/flick',live:null},
+
+  {title:'My Assistant',
+   desc:'Always-on Windows voice assistant powered by a local Ollama LLM — handles app launching, system controls, weather, and hardware stats with zero cloud required.',
+   tags:['python','ollama'],cat:'web',status:'live',preview:'tool',icon:'<i class="bx bx-bot"></i>',
+   gh:'https://github.com/Taha-mask/my_assistant',live:null},
+
+  {title:'Ramadan Planner',
+   desc:'Flutter lifestyle app for Ramadan: prayer tracking, Quran study log, and daily tasks — bilingual Arabic/English UI backed by SQLite persistence.',
+   tags:['flutter','dart','sqlite'],cat:'flutter',status:'live',preview:'flutter',icon:'<i class="bx bx-moon"></i>',
+   gh:'https://github.com/Taha-mask/Ramadan_planner',live:null},
+
+  {title:'Pomodoro Timer',
+   desc:'Flutter focus timer using Cubit state management — dynamic themes for work vs. break sessions, plus SQLite-backed session history.',
+   tags:['flutter','dart','sqlite'],cat:'flutter',status:'live',preview:'flutter',icon:'<i class="bx bx-timer"></i>',
+   gh:'https://github.com/Taha-mask/Pomodoro',live:null},
+
+  {title:'Encryption Platform',
+   desc:'Full-stack cryptography toolkit: 15+ algorithms (Caesar → AES/SHA-256), plus a real-time encrypted chat on Socket.IO where each message can use a different cipher.',
+   tags:['node','js','socketio'],cat:'web',status:'live',preview:'tool',icon:'<i class="bx bx-lock-alt"></i>',
+   gh:'https://github.com/Taha-mask/Encryption',live:null},
+
+  /* ── Freelance projects ── */
+  {title:'ELBASHA Restaurant',
+   desc:'Full-stack website for ELBASHA, an Egyptian restaurant in Paris — public menu site plus an admin dashboard for dishes, categories, and reviews, built on Astro SSR + Supabase.',
+   tags:['astro','supabase','tailwind'],cat:'freelance fullstack web',status:'live',preview:'web',icon:'<i class="bx bx-restaurant"></i>',
+   gh:null,live:null},
+
+  {title:'Illustre Consulting',
+   desc:'Marketing site and content platform for a restaurant-industry consulting firm — service pages, blog, and testimonials all managed through a custom admin CMS.',
+   tags:['astro','supabase','tailwind'],cat:'freelance fullstack web',status:'live',preview:'web',icon:'<i class="bx bx-line-chart"></i>',
+   gh:null,live:null},
+
+  {title:'Patarif Platform',
+   desc:'Full-stack freelance marketplace built with Angular + Supabase — auth, seller dashboard, real-time data subscriptions, and a clean component architecture.',
+   tags:['angular','ts','supabase'],cat:'freelance fullstack web',status:'live',preview:'web',icon:'<i class="bx bx-extension"></i>',
+   gh:null,live:null},
+
+  {title:'Lawyer Assistant System',
+   desc:'Web-based case management desk for a law firm — tracks clients, cases, and documents in a structured dashboard, built with vanilla JavaScript.',
+   tags:['js','html'],cat:'freelance web',status:'live',preview:'web',icon:'<i class="bx bx-briefcase"></i>',
+   gh:null,live:null},
+
+  {title:'BaladUp Community App',
+   desc:'Flutter community platform for local neighborhoods — residents post updates, discover events, and browse nearby services, with Supabase auth and real-time sync.',
+   tags:['flutter','dart','supabase'],cat:'freelance flutter',status:'wip',preview:'flutter',icon:'<i class="bx bx-buildings"></i>',
+   gh:null,live:null},
+];
+
+const tagClass: Record<string, string> = {
+  angular:'tag-angular',asp:'tag-asp',supabase:'tag-supabase',ts:'tag-ts',
+  flutter:'tag-flutter',dart:'tag-dart',python:'tag-python',node:'tag-node',
+  sql:'tag-sql',sqlite:'tag-sql',html:'tag-html',js:'tag-js',
+  ollama:'tag-ollama',socketio:'tag-socketio',astro:'tag-astro',tailwind:'tag-tailwind',
+};
+const tagLabel: Record<string, string> = {
+  angular:'Angular',asp:'ASP.NET',supabase:'Supabase',ts:'TypeScript',
+  flutter:'Flutter',dart:'Dart',python:'Python',node:'Node.js',
+  sql:'SQL',sqlite:'SQLite',html:'HTML/CSS',js:'JavaScript',
+  ollama:'Ollama LLM',socketio:'Socket.IO',astro:'Astro',tailwind:'Tailwind',
+};
+---
+<section class="projects-section" id="projects">
+  <div class="sec-header reveal">
+    <div class="sec-tag">// work</div>
+    <h2 class="sec-title">Featured Projects</h2>
+    <p class="sec-sub">A selection of projects I've built — from freelance work to personal experiments.</p>
+  </div>
+  <div class="filter-bar reveal">
+    <button class="filter-btn active" type="button" data-filter="all">All</button>
+    <button class="filter-btn" type="button" data-filter="flutter">Flutter</button>
+    <button class="filter-btn" type="button" data-filter="web">Web</button>
+    <button class="filter-btn" type="button" data-filter="freelance">Freelance</button>
+  </div>
+  <div class="marquee-container" dir="ltr">
+    <!-- Row 1: Scrolls Left -->
+    <div class="marquee-track track-left" id="track1">
+      {[1, 2].map(() => (
+        <div class="marquee-content">
+          {projects.map(p => (
+            <div class="project-card reveal on" data-cat={p.cat}>
+              {p.preview === 'flutter' && <div class="card-preview preview-flutter"><div class="preview-phone"><div class="preview-phone-top"></div><div class="preview-phone-block"></div><div class="preview-phone-block" style="opacity:.5;margin-top:4px;"></div><div class="preview-phone-block" style="opacity:.3;margin-top:4px;"></div></div><span class="card-type-badge badge-flutter">Flutter</span></div>}
+              {p.preview === 'tool' && <div class="card-preview preview-tool"><div class="preview-screen"><span style="color:var(--orange);">$ run script.js</span><br><span style="color:var(--green);">✓ output generated<br>✓ Done in 0.3s</span></div><span class="card-type-badge badge-tool">Tool</span></div>}
+              {p.preview === 'arabic' && <div class="card-preview preview-arabic"><div class="preview-screen" style="text-align:right;direction:rtl;"><span style="color:var(--purple);font-size:12px;">مراكزنا</span><br><span style="color:var(--muted);font-size:10px;">اختر مركزك القريب</span></div><span class="card-type-badge badge-web">Web</span></div>}
+              {p.preview === 'web' && <div class="card-preview preview-web"><div class="preview-screen"><span style="color:var(--green);">GET</span> /api/products<br><span style="color:var(--cyan);">200</span> OK · 42ms<br><span style="color:var(--muted);">[ &#123; id:1, ... &#125; ]</span></div><span class="card-type-badge badge-web">Web</span></div>}
+              
+              <div class="card-header">
+                <div class="card-icon"><Fragment set:html={p.icon} /></div>
+                <div class="card-links">
+                  {p.gh ? <a href={p.gh} target="_blank" rel="noopener" class="card-link">GitHub ↗</a> : <span class="card-link" style="color:var(--muted);border-color:var(--border);cursor:default;">🔒 Private</span>}
+                  {p.live && <a href={p.live} target="_blank" rel="noopener" class="card-link" style="color:var(--green);border-color:rgba(57,211,83,0.3)">Live ↗</a>}
+                </div>
+              </div>
+              <div class="card-body">
+                <h3 class="card-title">{p.title}</h3>
+                <div class="card-desc">{p.desc}</div>
+              </div>
+              <div class="card-footer">
+                {p.tags.map(t => <span class={`tech-tag ${tagClass[t]||'tag-default'}`}>{tagLabel[t]||t}</span>)}
+                {p.status === 'live' ? <span class="card-status status-live">● live</span> : <span class="card-status status-wip">◌ in progress</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+
+    <!-- Row 2: Scrolls Right -->
+    <div class="marquee-track track-right" id="track2" style="margin-top:24px;">
+      {[1, 2].map(() => (
+        <div class="marquee-content">
+          {[...projects].reverse().map(p => (
+            <div class="project-card reveal on" data-cat={p.cat}>
+              {p.preview === 'flutter' && <div class="card-preview preview-flutter"><div class="preview-phone"><div class="preview-phone-top"></div><div class="preview-phone-block"></div><div class="preview-phone-block" style="opacity:.5;margin-top:4px;"></div><div class="preview-phone-block" style="opacity:.3;margin-top:4px;"></div></div><span class="card-type-badge badge-flutter">Flutter</span></div>}
+              {p.preview === 'tool' && <div class="card-preview preview-tool"><div class="preview-screen"><span style="color:var(--orange);">$ run script.js</span><br><span style="color:var(--green);">✓ output generated<br>✓ Done in 0.3s</span></div><span class="card-type-badge badge-tool">Tool</span></div>}
+              {p.preview === 'arabic' && <div class="card-preview preview-arabic"><div class="preview-screen" style="text-align:right;direction:rtl;"><span style="color:var(--purple);font-size:12px;">مراكزنا</span><br><span style="color:var(--muted);font-size:10px;">اختر مركزك القريب</span></div><span class="card-type-badge badge-web">Web</span></div>}
+              {p.preview === 'web' && <div class="card-preview preview-web"><div class="preview-screen"><span style="color:var(--green);">GET</span> /api/products<br><span style="color:var(--cyan);">200</span> OK · 42ms<br><span style="color:var(--muted);">[ &#123; id:1, ... &#125; ]</span></div><span class="card-type-badge badge-web">Web</span></div>}
+              
+              <div class="card-header">
+                <div class="card-icon"><Fragment set:html={p.icon} /></div>
+                <div class="card-links">
+                  {p.gh ? <a href={p.gh} target="_blank" rel="noopener" class="card-link">GitHub ↗</a> : <span class="card-link" style="color:var(--muted);border-color:var(--border);cursor:default;">🔒 Private</span>}
+                  {p.live && <a href={p.live} target="_blank" rel="noopener" class="card-link" style="color:var(--green);border-color:rgba(57,211,83,0.3)">Live ↗</a>}
+                </div>
+              </div>
+              <div class="card-body">
+                <h3 class="card-title">{p.title}</h3>
+                <div class="card-desc">{p.desc}</div>
+              </div>
+              <div class="card-footer">
+                {p.tags.map(t => <span class={`tech-tag ${tagClass[t]||'tag-default'}`}>{tagLabel[t]||t}</span>)}
+                {p.status === 'live' ? <span class="card-status status-live">● live</span> : <span class="card-status status-wip">◌ in progress</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+/* ─── Projects ───────────────────────────────────────────────── */
+.projects-section{background:var(--bg);}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;}
+.filter-btn{
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
+  background:var(--bg2);border:1px solid var(--border);border-radius:20px;
+  padding:6px 16px;cursor:none;transition:all 0.2s;
+}
+.filter-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.filter-btn.active{background:var(--glow-green);border-color:rgba(57,211,83,0.4);color:var(--green);}
+.marquee-container{
+  overflow:hidden;
+  position:relative;
+  width:100%;
+}
+.marquee-track{
+  display:flex;
+  width:100%;
+  overflow-x:auto;
+  cursor:grab;
+  scrollbar-width:none;
+}
+.marquee-track::-webkit-scrollbar{
+  display:none;
+}
+.marquee-track:active{
+  cursor:grabbing;
+}
+.marquee-content{
+  display:flex;
+  gap:24px;
+  padding-right:24px;
+  flex-shrink:0;
+  width:max-content;
+}
+.project-card{
+  flex:0 0 340px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;transition:border-color 0.25s,transform 0.25s,box-shadow 0.25s;
+  cursor:none;display:flex;flex-direction:column;
+  user-select:none; /* Prevents text selection */
+}
+.project-card:hover{border-color:var(--cyan);transform:translateY(-5px);box-shadow:0 8px 32px rgba(88,166,255,0.08);}
+/* Card preview thumbnail */
+.card-preview{height:120px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.preview-web{background:linear-gradient(135deg,#0d1b2a,#1a3a5c);}
+.preview-flutter{background:linear-gradient(135deg,#0d2137,#0a3d5e);}
+.preview-tool{background:linear-gradient(135deg,#1a1a0d,#2e2a00);}
+.preview-arabic{background:linear-gradient(135deg,#1a0d2e,#2d0055);}
+.preview-screen{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);min-width:180px;}
+.preview-phone{width:56px;height:96px;background:var(--bg);border:2px solid var(--border);border-radius:12px;display:flex;flex-direction:column;padding:7px 5px;gap:5px;}
+.preview-phone-top{height:4px;background:var(--cyan);border-radius:2px;opacity:0.7;}
+.preview-phone-block{height:18px;background:var(--border);border-radius:3px;}
+.card-type-badge{position:absolute;top:10px;right:10px;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border-radius:4px;}
+.badge-web{background:rgba(88,166,255,0.15);color:var(--cyan);border:1px solid rgba(88,166,255,0.3);}
+.badge-flutter{background:rgba(84,197,248,0.15);color:#54c5f8;border:1px solid rgba(84,197,248,0.3);}
+.badge-tool{background:rgba(255,166,87,0.15);color:var(--orange);border:1px solid rgba(255,166,87,0.3);}
+.card-header{padding:16px 18px 0;display:flex;justify-content:space-between;align-items:center;}
+.card-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg3);}
+.card-links{display:flex;gap:8px;}
+.card-link{
+  color:var(--muted);text-decoration:none;font-size:12px;
+  font-family:'JetBrains Mono',monospace;padding:4px 10px;
+  border:1px solid var(--border);border-radius:4px;
+  transition:all 0.2s;cursor:none;
+}
+.card-link:hover{color:var(--cyan);border-color:var(--cyan);}
+.card-body{padding:12px 18px;flex:1;}
+.card-title{font-size:15px;font-weight:700;margin-bottom:7px;}
+.card-desc{font-size:14px;color:var(--muted);line-height:1.6;}
+.card-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.tech-tag{font-size:12px;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:4px;background:var(--bg3);}
+.tag-ts{color:#508ccf;}.tag-react{color:#61dafb;}.tag-angular{color:#dd0031;}
+.tag-python{color:#ffd43b;}.tag-node{color:#68a063;}.tag-flutter{color:#54c5f8;}
+.tag-dart{color:#3491ce;}.tag-asp{color:#512bd4;}.tag-sql{color:#f29111;}.tag-supabase{color:#3ecf8e;}
+.tag-css{color:#264de4;}.tag-html{color:#e65e3c;}.tag-js{color:#f7df1e;}
+.tag-firebase{color:#ffca28;}.tag-ollama{color:#a855f7;}.tag-socketio{color:#010101;background:rgba(255,255,255,0.08);}
+.tag-astro{color:#ff5d01;}.tag-tailwind{color:#22d3ee;}
+.tag-default{color:var(--muted);}
+.card-status{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:12px;margin-left:auto;}
+.status-live{background:rgba(57,211,83,0.1);color:var(--green);border:1px solid rgba(57,211,83,0.2);}
+.status-wip{background:rgba(255,166,87,0.1);color:var(--orange);border:1px solid rgba(255,166,87,0.2);}
+</style>
+
+<script>
+  function setupMarquee(trackId, speed) {
+    const track = document.getElementById(trackId);
+    if (!track) return;
+
+    // Respect the same reduced-motion preference the cursor/Lenis check —
+    // this loop is a self-perpetuating scroll with no way to fully stop it
+    // from the outside, exactly what prefers-reduced-motion asks to avoid.
+    // Dragging the track by hand still works either way.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let isHover = false;
+
+    track.addEventListener('mousedown', (e) => {
+      isDown = true;
+      startX = e.pageX - track.offsetLeft;
+      scrollLeft = track.scrollLeft;
+    });
+    track.addEventListener('mouseleave', () => {
+      isDown = false;
+      isHover = false;
+    });
+    track.addEventListener('mouseenter', () => {
+      isHover = true;
+    });
+    track.addEventListener('mouseup', () => {
+      isDown = false;
+    });
+    track.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - track.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      track.scrollLeft = scrollLeft - walk;
+    });
+
+    // Touch devices get no mouseenter/mouseleave, so auto-scroll would otherwise
+    // keep dragging the text out from under a reading finger.
+    let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+    track.addEventListener('touchstart', () => {
+      if (resumeTimer) clearTimeout(resumeTimer);
+      isHover = true;
+    }, { passive: true });
+    track.addEventListener('touchend', () => {
+      resumeTimer = setTimeout(() => { isHover = false; }, 2500);
+    }, { passive: true });
+
+    function autoScroll() {
+      if (!isHover && !isDown) {
+        track.scrollLeft += speed;
+      }
+      // Infinite loop logic
+      if (speed > 0) {
+        if (track.scrollLeft >= track.scrollWidth / 2) {
+          track.scrollLeft -= track.scrollWidth / 2; // seamless reset
+        }
+      } else {
+        if (track.scrollLeft <= 0) {
+          track.scrollLeft += track.scrollWidth / 2; // seamless reset
+        }
+      }
+      requestAnimationFrame(autoScroll);
+    }
+    
+    // Initial setup for reverse scrolling track
+    if (speed < 0) track.scrollLeft = track.scrollWidth / 2;
+    if (!reduceMotion) autoScroll();
+  }
+
+  window.addEventListener('load', () => {
+    setupMarquee('track1', 1);  // scrolls left natively
+    setupMarquee('track2', -1); // scrolls right natively
+  });
+
+  // Filter bar — data-cat already carried every card, this just reads it.
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.project-card').forEach(card => {
+        const cats = (card.dataset.cat || '').split(' ');
+        card.style.display = (filter === 'all' || cats.includes(filter)) ? '' : 'none';
+      });
+    });
+  });
+</script>

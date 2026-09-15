@@ -1,0 +1,164 @@
+---
+---
+<section class="contact-section" id="contact">
+  <div class="sec-header contact-header reveal">
+    <div class="sec-tag">// contact</div>
+    <h2 class="sec-title">Let's Build Together</h2>
+    <p class="sec-sub">Have a project in mind? I'm open to freelance work, collaborations, and full-time opportunities.</p>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-info reveal">
+      <a class="contact-item" href="mailto:iam.tahamahmoud@gmail.com">
+        <div class="ci-icon"><i class='bx bx-envelope'></i></div>
+        <div><div class="ci-label">email</div><div class="ci-val">iam.tahamahmoud@gmail.com</div></div>
+      </a>
+      <a class="contact-item" href="https://github.com/Taha-mask" target="_blank" rel="noopener">
+        <div class="ci-icon" style="font-size:16px;"><i class='bx bxl-github'></i></div>
+        <div><div class="ci-label">github</div><div class="ci-val">github.com/Taha-mask</div></div>
+      </a>
+      <a class="contact-item" href="https://www.linkedin.com/in/taha-mahmoud-8b6914269?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener">
+        <div class="ci-icon" style="font-size:16px;"><i class='bx bxl-linkedin-square'></i></div>
+        <div><div class="ci-label">linkedin</div><div class="ci-val">linkedin.com/in/taha-mahmoud-8b6914269</div></div>
+      </a>
+      <div class="contact-item">
+        <div class="ci-icon"><i class='bx bx-map'></i></div>
+        <div><div class="ci-label">location</div><div class="ci-val">Assiut, Egypt — GMT+3</div></div>
+      </div>
+    </div>
+    <form class="contact-form reveal" id="contactForm">
+      <!-- Get a free key at https://web3forms.com (just enter your email, no account needed)
+           and replace the placeholder below — the form won't actually send until you do. -->
+      <input type="hidden" name="access_key" value="053c2490-5411-4010-af41-54185f924a13" />
+      <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" />
+      <input class="cf-input" type="text" name="name" placeholder="your_name" required />
+      <input class="cf-input" type="email" name="email" placeholder="your@email.com" required />
+      <select class="cf-input" name="project" style="cursor:none;">
+        <option value="" disabled selected style="background:#161b22;">project_type</option>
+        <option style="background:#161b22;">Web App</option>
+        <option style="background:#161b22;">Flutter App</option>
+        <option style="background:#161b22;">Web + Flutter</option>
+        <option style="background:#161b22;">Other</option>
+      </select>
+      <textarea class="cf-input" name="message" rows="5" placeholder="// tell me about your project..." required></textarea>
+      <button class="send-btn" type="submit" id="sendBtn">$ send_message()</button>
+      <p class="cf-status" id="cfStatus" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">&lt;taha.dev /&gt;</div>
+  <div class="footer-copy">// crafted with <i class='bx bxs-heart' style="color:var(--red); font-size:12px; margin: 0 4px;"></i> — 2025</div>
+  <div class="footer-links">
+    <a href="https://github.com/Taha-mask" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.linkedin.com/in/taha-mahmoud-8b6914269?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:taha.mahmoud.eng@gmail.com">Email</a>
+  </div>
+</footer>
+
+<style>
+/* ─── Contact ────────────────────────────────────────────────── */
+.contact-section{background:var(--bg); padding: 88px 40px;}
+.contact-header{max-width:840px; margin: 0 auto 52px; text-align: left;}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:840px; margin: 0 auto;}
+.contact-info{display:flex;flex-direction:column;gap:14px;}
+.contact-item{
+  display:flex;align-items:center;gap:14px;padding:16px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  transition:border-color 0.2s,box-shadow 0.2s;cursor:none;text-decoration:none;
+}
+.contact-item:hover{border-color:var(--cyan);box-shadow:0 4px 16px rgba(88,166,255,0.08);}
+.ci-icon{font-size:15px;width:38px;height:38px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--white);}
+.ci-label{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.ci-val{font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--cyan);}
+.contact-form{display:flex;flex-direction:column;gap:12px;}
+.cf-input{
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;color:var(--white);font-size:13px;
+  font-family:'JetBrains Mono',monospace;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;resize:none;width:100%;
+}
+.cf-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(88,166,255,0.08);}
+.cf-input::placeholder{color:var(--muted);}
+.send-btn{
+  background:var(--green);color:#0d1117;border:none;border-radius:8px;
+  padding:14px;font-size:13px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;cursor:none;transition:all 0.2s;
+  box-shadow:0 0 20px rgba(57,211,83,0.2);
+}
+.send-btn:hover{background:#4ae168;transform:translateY(-2px);box-shadow:0 4px 24px rgba(57,211,83,0.35);}
+.send-btn:disabled{opacity:0.6;transform:none;}
+.cf-status{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);min-height:16px;}
+.cf-status.err{color:var(--red);}
+
+/* ─── Footer ─────────────────────────────────────────────────── */
+footer{
+  background:var(--bg2);border-top:1px solid var(--border);
+  padding:36px 40px;display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:16px;
+}
+.footer-brand{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green);}
+.footer-copy{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;cursor:none;transition:color 0.2s;}
+.footer-links a:hover{color:var(--cyan);}
+
+@media(max-width:900px){
+  .contact-grid{grid-template-columns:1fr;}
+}
+@media(max-width:640px){
+  .contact-grid{grid-template-columns:1fr;}
+  footer{padding:24px 16px;flex-direction:column;text-align:center;}
+}
+</style>
+
+<script>
+  const form = document.getElementById('contactForm') as HTMLFormElement | null;
+  const status = document.getElementById('cfStatus');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('sendBtn');
+      if (!btn) return;
+
+      const accessKey = (form.elements.namedItem('access_key') as HTMLInputElement)?.value;
+      if (!accessKey || accessKey === 'YOUR_WEB3FORMS_ACCESS_KEY') {
+        if (status) { status.textContent = 'Form isn\'t wired up yet — email me directly instead.'; status.classList.add('err'); }
+        return;
+      }
+
+      btn.textContent = 'sending...';
+      btn.setAttribute('disabled', 'true');
+      if (status) { status.textContent = ''; status.classList.remove('err'); }
+
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        });
+        const result = await res.json();
+        if (!res.ok || !result.success) throw new Error(result.message || 'Send failed');
+
+        btn.textContent = '✓ sent successfully';
+        btn.style.background = '#3fb950';
+        btn.style.color = 'white';
+        form.reset();
+      } catch (err) {
+        btn.textContent = '✗ failed to send';
+        btn.style.background = 'var(--red)';
+        btn.style.color = 'white';
+        if (status) { status.textContent = 'Something went wrong — email me directly instead.'; status.classList.add('err'); }
+        console.error('Contact form error:', err);
+      } finally {
+        setTimeout(() => {
+          btn.textContent = '$ send_message()';
+          btn.style.background = 'var(--green)';
+          btn.style.color = '#0d1117';
+          btn.removeAttribute('disabled');
+        }, 3000);
+      }
+    });
+  }
+</script>

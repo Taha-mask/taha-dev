@@ -1,0 +1,31 @@
+---
+---
+<div class="spec-bar">
+  <div class="spec-item">
+    <div class="spec-icon"><i class='bx bx-globe' style="color:var(--cyan)"></i></div>
+    <div><div class="spec-label">Web Development</div><div class="spec-sub">Angular · TypeScript · HTML/CSS · JS</div></div>
+  </div>
+  <div class="spec-item">
+    <div class="spec-icon"><i class='bx bx-mobile-alt' style="color:var(--purple)"></i></div>
+    <div><div class="spec-label">Flutter Development</div><div class="spec-sub">Dart · Cross-Platform · Material UI</div></div>
+  </div>
+  <div class="spec-item">
+    <div class="spec-icon"><i class='bx bx-server' style="color:var(--green)"></i></div>
+    <div><div class="spec-label">Backend & DB</div><div class="spec-sub">Supabase · SQL · REST APIs</div></div>
+  </div>
+</div>
+
+<style>
+/* ─── Spec bar ───────────────────────────────────────────────── */
+.spec-bar{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:20px 40px;display:flex;justify-content:center;}
+.spec-item{display:flex;align-items:center;gap:12px;padding:0 40px;border-right:1px solid var(--border);}
+.spec-item:last-child{border-right:none;}
+.spec-icon{font-size:22px;}
+.spec-label{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--white);font-weight:600;}
+.spec-sub{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+@media(max-width:640px){
+  .spec-bar{flex-wrap:wrap;padding:0;}
+  .spec-item{border-right:none;border-bottom:1px solid var(--border);padding:16px 20px;width:100%;}
+}
+</style>

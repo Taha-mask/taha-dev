@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "taha-dev-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", ".", "-l", "4300"],
+      "port": 4300
+    },
+    {
+      "name": "taha-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 4321
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+---
+const webSkills = [
+  {n:'HTML / CSS',pct:95,c:'#e34c26'},{n:'JavaScript',pct:88,c:'#f7df1e'},
+  {n:'Angular',pct:85,c:'#dd0031'},{n:'TypeScript',pct:82,c:'#3178c6'},
+  {n:'Bootstrap',pct:90,c:'#7952b3'},{n:'REST APIs',pct:80,c:'#39d353'},
+  {n:'Supabase',pct:78,c:'#3ecf8e'},
+];
+const flutterSkills = [
+  {n:'Flutter',pct:85,c:'#54c5f8'},{n:'Dart',pct:83,c:'#0175c2'},
+  {n:'Material UI',pct:88,c:'#54c5f8'},{n:'Supabase',pct:78,c:'#3ecf8e'},
+  {n:'State Mgmt',pct:75,c:'#bc8cff'},{n:'Firebase',pct:65,c:'#ffca28'},
+  {n:'SQL',pct:72,c:'#f29111'},
+];
+---
+<section class="skills-section" id="skills">
+  <div class="sec-header reveal">
+    <div class="sec-tag">// tech stack</div>
+    <h2 class="sec-title">Skills & Tools</h2>
+    <p class="sec-sub">Two specialties, one developer — web and Flutter backed by a solid foundation.</p>
+  </div>
+  <div class="skills-cols">
+    <div class="reveal">
+      <div class="skill-col-title"><div class="dot" style="background:var(--cyan)"></div>Web Development</div>
+      <div class="skill-list" id="webSkills">
+        {webSkills.map(s => (
+          <div class="skill-row">
+            <span class="skill-name-txt" style={`color:${s.c}`}>{s.n}</span>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-fill" style={`background:${s.c}`} data-w={s.pct}></div>
+            </div>
+            <span class="skill-pct">{s.pct}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="skill-col-title"><div class="dot" style="background:#54c5f8"></div>Flutter & Mobile</div>
+      <div class="skill-list" id="flutterSkills">
+        {flutterSkills.map(s => (
+          <div class="skill-row">
+            <span class="skill-name-txt" style={`color:${s.c}`}>{s.n}</span>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-fill" style={`background:${s.c}`} data-w={s.pct}></div>
+            </div>
+            <span class="skill-pct">{s.pct}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+/* ─── Skills ─────────────────────────────────────────────────── */
+.skills-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.skills-cols{display:grid;grid-template-columns:1fr 1fr;gap:48px;}
+.skill-col-title{font-family:'JetBrains Mono',monospace;font-size:13px;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:var(--white);}
+.skill-col-title .dot{width:10px;height:10px;border-radius:50%;}
+.skill-list{display:flex;flex-direction:column;gap:14px;}
+.skill-row{display:flex;align-items:center;gap:12px;}
+.skill-name-txt{font-family:'JetBrains Mono',monospace;font-size:13px;min-width:120px;}
+.skill-bar-wrap{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.skill-bar-fill{height:100%;border-radius:2px;width:0%;transition:width 1.4s cubic-bezier(0.4,0,0.2,1);}
+.skill-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);min-width:32px;text-align:right;}
+
+@media(max-width:640px){
+  .skills-cols{grid-template-columns:1fr;}
+}
+</style>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.skill-bar-fill').forEach(b => {
+      (b as HTMLElement).style.width = (b as HTMLElement).dataset.w + '%';
+    });
+  }, 600);
+</script>
