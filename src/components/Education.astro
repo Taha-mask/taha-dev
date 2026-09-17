@@ -1,0 +1,75 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang)();
+const edu = t.educationSec;
+---
+<section class="edu" id="education">
+  <div class="sec-header reveal">
+    <div class="sec-tag">{edu.tag}</div>
+    <h2 class="sec-title">{edu.title}</h2>
+    <p class="sec-sub">{edu.sub}</p>
+  </div>
+
+  <!-- An ordered list, not a stack of divs: the order of these two entries is
+       the content, so a screen reader should announce "1 of 2" rather than
+       leaving the sequence to the visual layout. -->
+  <ol class="entry-list">
+    {edu.items.map(item => (
+      <li class="entry reveal">
+        <p class="entry-period meta">{item.period}</p>
+        <div class="entry-body">
+          <h3 class="entry-title">
+            {item.institution}
+            {item.current && <span class="entry-now">{edu.currentBadge}</span>}
+          </h3>
+          <p class="entry-sub">{item.field}</p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<style>
+/* ─── Education ──────────────────────────────────────────────────
+   Two entries. They used to be a drawn timeline — a spine, a gradient fade,
+   a rounded icon tile per item in its own colour, each inside a bordered
+   card. For two rows of text. This is the same information as a dated list:
+   when on the left, what on the right, a hairline between them. */
+.entry-list{list-style:none;}
+
+.entry{
+  display:grid;gap:4px 32px;
+  padding:20px 0;
+  border-top:1px solid var(--border);
+}
+.entry:last-child{border-bottom:1px solid var(--border);}
+@media(min-width:640px){
+  .entry{grid-template-columns:160px 1fr;}
+}
+
+/* Held on the baseline of the title next to it rather than centred in its
+   own column — the date should read as the first word of the row. */
+.entry-period{padding-top:3px;}
+
+.entry-title{
+  font-family:var(--font-sans);font-size:17px;font-weight:600;
+  letter-spacing:0;line-height:1.45;
+  /* Both fields can be a Latin proper name inside an otherwise RTL card
+     (institution names keep their official spelling in every locale).
+     Isolating them stops the bidi algorithm from dragging the surrounding
+     punctuation to the wrong end of the line. */
+  unicode-bidi:isolate;
+}
+.entry-sub{font-size:15px;color:var(--text-2);margin-top:2px;unicode-bidi:isolate;}
+
+/* "current" as a word in the accent, inline with the institution — no pill,
+   no border, no pulsing dot. */
+.entry-now{
+  font-family:var(--font-mono);font-size:11px;font-weight:400;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent);margin-inline-start:10px;
+  white-space:nowrap;
+}
+</style>

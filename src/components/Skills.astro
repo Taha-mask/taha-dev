@@ -1,77 +1,109 @@
 ---
-const webSkills = [
-  {n:'HTML / CSS',pct:95,c:'#e34c26'},{n:'JavaScript',pct:88,c:'#f7df1e'},
-  {n:'Angular',pct:85,c:'#dd0031'},{n:'TypeScript',pct:82,c:'#3178c6'},
-  {n:'Bootstrap',pct:90,c:'#7952b3'},{n:'REST APIs',pct:80,c:'#39d353'},
-  {n:'Supabase',pct:78,c:'#3ecf8e'},
-];
-const flutterSkills = [
-  {n:'Flutter',pct:85,c:'#54c5f8'},{n:'Dart',pct:83,c:'#0175c2'},
-  {n:'Material UI',pct:88,c:'#54c5f8'},{n:'Supabase',pct:78,c:'#3ecf8e'},
-  {n:'State Mgmt',pct:75,c:'#bc8cff'},{n:'Firebase',pct:65,c:'#ffca28'},
-  {n:'SQL',pct:72,c:'#f29111'},
-];
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang)();
+
+const webSkills = t.skills.webSkills;
+const flutterSkills = t.skills.flutterSkills;
 ---
-<section class="skills-section" id="skills">
+<section class="skills" id="skills">
   <div class="sec-header reveal">
-    <div class="sec-tag">// tech stack</div>
-    <h2 class="sec-title">Skills & Tools</h2>
-    <p class="sec-sub">Two specialties, one developer — web and Flutter backed by a solid foundation.</p>
+    <div class="sec-tag">{t.skills.tag}</div>
+    <h2 class="sec-title">{t.skills.title}</h2>
+    <p class="sec-sub">{t.skills.sub}</p>
   </div>
-  <div class="skills-cols">
+
+  <div class="skill-cols">
     <div class="reveal">
-      <div class="skill-col-title"><div class="dot" style="background:var(--cyan)"></div>Web Development</div>
-      <div class="skill-list" id="webSkills">
+      <h3 class="skill-col-title">{t.skills.webCol}</h3>
+      <ul class="skill-list">
         {webSkills.map(s => (
-          <div class="skill-row">
-            <span class="skill-name-txt" style={`color:${s.c}`}>{s.n}</span>
-            <div class="skill-bar-wrap">
-              <div class="skill-bar-fill" style={`background:${s.c}`} data-w={s.pct}></div>
-            </div>
+          <li class="skill" dir="ltr">
+            <span class="skill-name">{s.n}</span>
+            <span class="skill-track"><span class="skill-fill" data-w={s.pct}></span></span>
             <span class="skill-pct">{s.pct}%</span>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
     <div class="reveal">
-      <div class="skill-col-title"><div class="dot" style="background:#54c5f8"></div>Flutter & Mobile</div>
-      <div class="skill-list" id="flutterSkills">
+      <h3 class="skill-col-title">{t.skills.flutterCol}</h3>
+      <ul class="skill-list">
         {flutterSkills.map(s => (
-          <div class="skill-row">
-            <span class="skill-name-txt" style={`color:${s.c}`}>{s.n}</span>
-            <div class="skill-bar-wrap">
-              <div class="skill-bar-fill" style={`background:${s.c}`} data-w={s.pct}></div>
-            </div>
+          <li class="skill" dir="ltr">
+            <span class="skill-name">{s.n}</span>
+            <span class="skill-track"><span class="skill-fill" data-w={s.pct}></span></span>
             <span class="skill-pct">{s.pct}%</span>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   </div>
 </section>
 
 <style>
-/* ─── Skills ─────────────────────────────────────────────────── */
-.skills-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-.skills-cols{display:grid;grid-template-columns:1fr 1fr;gap:48px;}
-.skill-col-title{font-family:'JetBrains Mono',monospace;font-size:13px;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:var(--white);}
-.skill-col-title .dot{width:10px;height:10px;border-radius:50%;}
-.skill-list{display:flex;flex-direction:column;gap:14px;}
-.skill-row{display:flex;align-items:center;gap:12px;}
-.skill-name-txt{font-family:'JetBrains Mono',monospace;font-size:13px;min-width:120px;}
-.skill-bar-wrap{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
-.skill-bar-fill{height:100%;border-radius:2px;width:0%;transition:width 1.4s cubic-bezier(0.4,0,0.2,1);}
-.skill-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);min-width:32px;text-align:right;}
+/* ─── Skills ─────────────────────────────────────────────────────
+   Two lists, one line per tool. Every bar used to be painted in that tool's
+   own brand colour — fourteen rows, eleven different hues, which turned an
+   honest list into a paint chart and made the section the loudest thing on
+   the page. The bars are still here, because a length is easier to read at a
+   glance than a number, but they are all the same quiet accent and only 2px
+   tall: a sparkline, not a progress bar. */
+.skill-cols{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:40px 56px;
+}
 
-@media(max-width:640px){
-  .skills-cols{grid-template-columns:1fr;}
+.skill-col-title{
+  font-family:var(--font-sans);font-size:15px;font-weight:600;
+  color:var(--text);letter-spacing:0;
+  padding-bottom:12px;margin-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+
+.skill-list{list-style:none;}
+.skill{
+  display:grid;grid-template-columns:1fr 84px 34px;
+  align-items:center;gap:14px;
+  padding:9px 0;
+}
+.skill-name{font-size:14.5px;color:var(--text-2);}
+
+.skill-track{height:2px;background:var(--surface-2);border-radius:2px;overflow:hidden;}
+.skill-fill{
+  display:block;height:100%;width:0;
+  background:var(--accent);opacity:0.65;
+  transition:width 0.9s cubic-bezier(0.22,1,0.36,1);
+}
+.skill-pct{
+  font-family:var(--font-mono);font-size:11.5px;
+  color:var(--text-3);text-align:end;
+}
+
+@media(max-width:700px){
+  .skill-cols{grid-template-columns:1fr;gap:32px;}
 }
 </style>
 
 <script>
-  setTimeout(() => {
-    document.querySelectorAll('.skill-bar-fill').forEach(b => {
-      (b as HTMLElement).style.width = (b as HTMLElement).dataset.w + '%';
-    });
-  }, 600);
+  /* Fill the bars once the list is actually on screen, rather than on a timer
+     that may well have fired before the visitor scrolled this far. */
+  const skillList = document.querySelector('.skill-cols');
+
+  if (skillList) {
+    const fill = () => {
+      document.querySelectorAll<HTMLElement>('.skill-fill').forEach(bar => {
+        bar.style.width = (bar.dataset.w || '0') + '%';
+      });
+    };
+
+    const skillObserver = new IntersectionObserver((entries, observer) => {
+      if (!entries[0].isIntersecting) return;
+      fill();
+      observer.disconnect();
+    }, { threshold: 0.2 });
+
+    skillObserver.observe(skillList);
+  }
 </script>

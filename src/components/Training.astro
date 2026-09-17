@@ -1,0 +1,77 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang)();
+const tr = t.trainingSec;
+---
+<section class="training" id="training">
+  <div class="sec-header reveal">
+    <div class="sec-tag">{tr.tag}</div>
+    <h2 class="sec-title">{tr.title}</h2>
+    <p class="sec-sub">{tr.sub}</p>
+  </div>
+
+  <div class="tr reveal">
+    <p class="tr-role meta">{tr.role}</p>
+    <div class="tr-body">
+      <h3 class="tr-org">{tr.org} <span class="tr-topic">{tr.topic}</span></h3>
+      <p class="tr-desc">{tr.desc}</p>
+      <ul class="tr-points">
+        {tr.points.map(point => <li>{point}</li>)}
+      </ul>
+      <div class="tr-tags" dir="ltr">
+        {tr.tags.map(tag => <span class="tag">{tag}</span>)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+/* ─── Training & teaching ────────────────────────────────────────
+   Deliberately laid out exactly like the education entries above: role on
+   the left, what happened on the right. It used to be a wide card with a
+   tinted panel, a purple icon tile and a pill — a lot of furniture around
+   three sentences, and a second visual language for the same kind of
+   content. Same rhythm reads as one person's history rather than two
+   different components. */
+.tr{
+  display:grid;gap:8px 32px;
+  padding:20px 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+@media(min-width:640px){
+  .tr{grid-template-columns:160px 1fr;}
+}
+.tr-role{padding-top:3px;}
+
+.tr-org{
+  font-family:var(--font-sans);font-size:17px;font-weight:600;
+  letter-spacing:0;line-height:1.45;
+  /* Latin organisation name inside an RTL page — same isolation reasoning as
+     the education entries. */
+  unicode-bidi:isolate;
+}
+/* The subject, inline after the organisation: it is a qualifier, not a badge. */
+.tr-topic{
+  font-family:var(--font-mono);font-size:11px;font-weight:400;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--text-3);margin-inline-start:10px;white-space:nowrap;
+}
+
+.tr-desc{font-size:15px;color:var(--text-2);margin-top:8px;max-width:var(--measure);}
+
+/* Plain list, marked with an em dash rather than a green tick per line. */
+.tr-points{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:6px;}
+.tr-points li{
+  font-size:15px;color:var(--text-2);
+  padding-inline-start:20px;position:relative;max-width:var(--measure);
+}
+.tr-points li::before{
+  content:'—';position:absolute;inset-inline-start:0;
+  color:var(--text-3);
+}
+
+.tr-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px;}
+</style>

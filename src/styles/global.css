@@ -1,80 +1,295 @@
-/* ─── Reset & Tokens ─────────────────────────────────────────── */
+/* ─── Reset ──────────────────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box;}
+img{display:block;max-width:100%;}
+
+/* ─── Design tokens ──────────────────────────────────────────────
+   Five palette colours, then role tokens built on them.
+
+   Components never read the palette directly — only the roles (--bg, --text,
+   --accent...). That split is what lets one colour play a different part in
+   each theme: onyx is the page in dark mode and the text in light mode.
+
+   Where a palette colour is used as-is it is referenced with var(). Where it
+   is not, the hex next to it is a tint or shade of that same colour, and the
+   comment says why — almost always because the original would fail as text
+   on that background.
+
+   :root holds the DARK values; the light theme below re-declares only what
+   actually differs. Every component reads these variables, so the two blocks
+   below are the whole visual system. */
 :root{
-  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;
-  --green:#39d353;--cyan:#58a6ff;--purple:#bc8cff;
-  --orange:#ffa657;--red:#f85149;--muted:#8b949e;
-  --border:#30363d;--white:#e6edf3;
-  --glow-green:rgba(57,211,83,0.15);
-  --glow-cyan:rgba(88,166,255,0.15);
-  --radius:10px;
+  color-scheme:dark;
+
+  /* ── Palette ──
+     The five brand colours, exactly as chosen. Theme-independent. */
+  --lilac-ash:#bcabae;
+  --onyx:#0f0f0f;
+  --graphite:#2d2e2e;
+  --dim-grey:#716969;
+  --white:#fbfbfb;
+
+  /* surfaces — four steps, and that is the entire depth budget.
+     --bg is the page. --bg-soft is for a strip that should sit back a little
+     (the nav, the footer). --surface is the only "raised" tone, used by
+     inputs and the few real cards left. --surface-2 backs small inline things
+     (tech tags, thumbnails) that sit ON a surface. The three in between are
+     steps from onyx towards graphite. */
+  --bg:var(--onyx);
+  --bg-soft:#141414;
+  --surface:#1a1a1a;
+  --surface-2:#222323;
+
+  /* Borders are structure, not decoration: hairlines that separate, never
+     outlines that glow. Graphite is exactly one quiet step up from onyx, which
+     is what a hairline should be. --border-strong is only for a hovered or
+     active edge. */
+  --border:var(--graphite);
+  --border-strong:#454343;
+
+  /* text — three roles, each with a job.
+       --text    headings and anything that must be read first (~18:1)
+       --text-2  running prose (~13:1). A step down from white so a long
+                 paragraph does not glare, but nowhere near faded
+       --text-3  metadata — dates, counts, labels. Dim-grey itself sits at
+                 3.6:1 on onyx, under the 4.5 that small text needs, so this
+                 is dim-grey lifted until it reads (~6.5:1, ~5.5:1 on the tag
+                 surface). */
+  --text:var(--white);
+  --text-2:#d6d2d2;
+  --text-3:#9e9696;
+
+  /* ── Accent ──
+     Lilac-ash, the only colour in the palette with any hue. It appears on
+     links, the primary button, the active nav and tab markers, and the short
+     rule above a section label — nowhere else. If a third of the page is
+     accent-coloured, none of it is emphasis. --accent-fg is the text drawn ON
+     a filled accent surface. */
+  --accent:var(--lilac-ash);
+  --accent-strong:#d2c6c8;
+  --accent-fg:var(--onyx);
+  --accent-soft:rgba(188,171,174,0.12);
+  --accent-line:rgba(188,171,174,0.4);
+
+  /* Semantic, and always paired with a word ("couldn't send") — never the
+     sole carrier of meaning. The one colour outside the palette, and it only
+     shows up when a message fails to send. */
+  --danger:#f2958d;
+
+  /* ── Typography ──
+       --font-serif   headings. A text serif, not a display face: it gives the
+                      page a voice without the quirk that makes a display font
+                      tiring at paragraph length.
+       --font-sans    everything actually read — Inter is drawn for screens:
+                      tall x-height, open apertures, legible at 13px.
+       --font-mono    a small signature for dates, tech tags and the wordmark.
+                      Sparingly: this is a portfolio, not a terminal.
+     Neither Latin family ships Arabic glyphs, so every stack ends in
+     'IBM Plex Sans Arabic'; the browser falls back per glyph, which keeps
+     Latin on the intended face and lands Arabic on a designed font instead of
+     the OS default (Tahoma on Windows). */
+  --font-serif:'Source Serif 4','IBM Plex Sans Arabic',Georgia,serif;
+  --font-sans:'Inter','IBM Plex Sans Arabic',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono','IBM Plex Sans Arabic',ui-monospace,monospace;
+
+  /* One shadow, for the two things that genuinely float above the page: the
+     mobile menu and the certificate lightbox. Cards do not get one. */
+  --shadow:0 12px 32px rgba(0,0,0,0.35);
+
+  --radius:8px;
+  --radius-sm:5px;
+
+  /* The reading measure. Inter's ch unit is wide (its zero is 0.63em), so 62
+     of them land at roughly 72 characters a line — past ~75 the eye starts
+     losing its place on the carriage return. */
+  --measure:62ch;
 }
-html{scroll-behavior:initial;}
+
+/* ─── Light theme ────────────────────────────────────────────────
+   Set on <html> by the inline script in Layout.astro before first paint, so
+   a visitor who chose light never sees a dark flash.
+
+   Not an inversion of the dark theme: the page is the palette's white
+   (#fbfbfb, not #ffffff), and section separation comes from a few slightly
+   deeper greys rather than from white cards on grey. */
+:root[data-theme="light"]{
+  color-scheme:light;
+
+  --bg:var(--white);
+  --bg-soft:#f6f5f5;
+  --surface:#f3f1f1;
+  --surface-2:#efecec;
+
+  --border:#e3dfdf;
+  --border-strong:#cbc5c5;
+
+  /* The palette maps straight onto the three text roles here, and every one
+     of them passes: onyx for headings (~18:1), graphite for prose (~13:1),
+     dim-grey for metadata (~5:1). A light background only feels calm when
+     the text on it is firm — soft on soft is what reads as faded. */
+  --text:var(--onyx);
+  --text-2:var(--graphite);
+  --text-3:var(--dim-grey);
+
+  /* Lilac-ash is ~2:1 on white — fine as a tint, unreadable as a link. This
+     is the same hue (349°) taken down to ~42% lightness, so links and the
+     button label still clear 5:1 without leaving the palette's colour. */
+  --accent:#775f64;
+  --accent-strong:#5f4c50;
+  --accent-fg:var(--white);
+  --accent-soft:rgba(119,95,100,0.09);
+  --accent-line:rgba(119,95,100,0.35);
+
+  --danger:#b42318;
+
+  --shadow:0 12px 32px rgba(15,15,15,0.1);
+}
+
+/* ─── Base ───────────────────────────────────────────────────── */
+/* Native smooth scroll for the in-page nav links, and a scroll offset so an
+   anchor never lands underneath the sticky header. Both are off for anyone
+   who asked for reduced motion (see the media query further down). */
+html{scroll-behavior:smooth;scroll-padding-top:72px;}
 body{
-  background:var(--bg);color:var(--white);
-  font-family:'Space Grotesk',sans-serif;overflow-x:hidden;cursor:none;
+  background:var(--bg);
+  color:var(--text-2);
+  font-family:var(--font-sans);
+  font-size:16px;
+  line-height:1.7;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
 }
 
-/* ─── Cursor fallback ────────────────────────────────────────────
-   Every cursor:none in this codebase assumes the JS-driven custom
-   cursor (see Layout.astro) is actually running. It isn't on touch
-   devices, with prefers-reduced-motion, or before/if that script
-   fails — so keep the native cursor visible until JS confirms it's
-   safe to hide it by adding .has-custom-cursor to <html>. */
-html:not(.has-custom-cursor) *{cursor:auto!important;}
-html:not(.has-custom-cursor) .cursor,
-html:not(.has-custom-cursor) .cursor-ring{display:none;}
-
-/* ─── Focus states ───────────────────────────────────────────── */
-a:focus-visible,
-button:focus-visible,
-[tabindex]:focus-visible{
-  outline:2px solid var(--cyan);
-  outline-offset:3px;
-  border-radius:4px;
+h1,h2,h3,h4{
+  font-family:var(--font-serif);
+  color:var(--text);
+  font-weight:600;
+  line-height:1.25;
+  letter-spacing:-0.01em;
 }
 
-/* ─── Reduced motion ─────────────────────────────────────────────
-   Covers every CSS animation/transition on the site (pulse dots,
-   blinking cursor, floating icons, hover transitions, reveal-on-
-   scroll). The two JS-driven motion loops this can't reach — Lenis
-   smooth-scroll and the projects marquee auto-scroll — check the
-   same media query themselves (Layout.astro, Projects.astro). */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+a{color:inherit;}
+
+/* ─── Layout ─────────────────────────────────────────────────────
+   Every section is the same width and sits on the same background. The page
+   is divided by a hairline and by space, not by alternating full-bleed
+   slabs — which is what stops a long page reading as a stack of unrelated
+   panels. */
+/* Direct children of <body> only: components nest their own <section>s for
+   structure (the four blocks of a case-study write-up), and those must not
+   inherit a page section's width, padding or divider. */
+body > section{
+  max-width:1060px;
+  margin-inline:auto;
+  padding:88px 28px;
+  position:relative;
+}
+body > section + section{border-top:1px solid var(--border);}
+
+/* ─── Section headers ────────────────────────────────────────────
+   Label, title, one line of context. The short rule before the label is the
+   only ornament in the design, and one of the few places the accent appears
+   outside links and buttons. */
+.sec-header{margin-bottom:44px;max-width:var(--measure);}
+.sec-tag{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-mono);font-size:12px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:14px;
+}
+.sec-tag::before{
+  content:'';width:22px;height:1px;background:var(--accent);flex-shrink:0;
+}
+.sec-title{font-size:clamp(26px,3.4vw,34px);}
+.sec-sub{font-size:16px;color:var(--text-2);margin-top:12px;}
+
+/* ─── Links ──────────────────────────────────────────────────────
+   Underlined, with the line held off the baseline so descenders stay
+   readable. The underline is what tells a non-technical visitor that a word
+   is clickable; colour alone does not. */
+.link{
+  color:var(--accent);text-decoration:underline;
+  text-decoration-thickness:1px;text-underline-offset:3px;
+  text-decoration-color:var(--accent-line);
+  transition:text-decoration-color 0.15s;
+}
+.link:hover{text-decoration-color:var(--accent);}
+
+/* ─── Buttons ────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--font-sans);font-size:15px;font-weight:500;
+  padding:11px 20px;border-radius:var(--radius);
+  border:1px solid transparent;text-decoration:none;cursor:pointer;
+  transition:background-color 0.18s,border-color 0.18s,color 0.18s;
+}
+.btn-primary{background:var(--accent);color:var(--accent-fg);}
+.btn-primary:hover{background:var(--accent-strong);}
+.btn-ghost{border-color:var(--border-strong);color:var(--text);background:transparent;}
+.btn-ghost:hover{border-color:var(--text-3);background:var(--surface);}
+
+/* ─── Small print ────────────────────────────────────────────────
+   Dates, counts, tech names. Mono at small sizes, never a whole
+   paragraph of it. */
+.meta{
+  font-family:var(--font-mono);font-size:12px;
+  color:var(--text-3);letter-spacing:0.02em;
+}
+.tag{
+  font-family:var(--font-mono);font-size:12px;
+  color:var(--text-3);background:var(--surface-2);
+  padding:3px 8px;border-radius:var(--radius-sm);white-space:nowrap;
+}
+
+/* ─── Theme swap ─────────────────────────────────────────────────
+   Only live while the toggle is firing (Navbar.astro adds the class and
+   strips it again), so scrolling and hover never pay for these
+   transitions. */
+html.theme-transition,
+html.theme-transition *{
+  transition:background-color 0.2s ease,border-color 0.2s ease,color 0.2s ease!important;
+}
+
+/* ─── Focus ──────────────────────────────────────────────────── */
+a:focus-visible,button:focus-visible,input:focus-visible,
+select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  border-radius:3px;
+}
+
+/* ─── Reveal on scroll ───────────────────────────────────────────
+   Opacity and 10px — enough that a section feels like it arrives, not so
+   much that the visitor watches it travel. Killed outright below for anyone
+   who asked for less motion.
+
+   Guarded by .js on <html> (set pre-paint in Layout.astro) so the hidden
+   state only ever exists where the script that un-hides it is running. A
+   page whose content starts at opacity:0 and waits for JavaScript is a page
+   that shows a visitor nothing when anything at all goes wrong. */
+html.js .reveal{opacity:0;transform:translateY(10px);transition:opacity 0.5s ease,transform 0.5s ease;}
+html.js .reveal.on{opacity:1;transform:none;}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:0.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:0.01ms!important;
+    scroll-behavior:auto!important;
   }
-}
-
-/* ─── Noise texture overlay ──────────────────────────────────── */
-body::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  opacity:0.025;
+  html.js .reveal{opacity:1;transform:none;}
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────── */
-::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar{width:10px;height:10px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
-::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border:3px solid var(--bg);border-radius:10px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text-3);}
 
-/* ─── Animations ─────────────────────────────────────────────── */
-.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1),transform 0.8s cubic-bezier(0.16,1,0.3,1);}
-.reveal.on{opacity:1;transform:none;}
-@keyframes blink{0%,100%{opacity:.9;}50%{opacity:0;}}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
-
-/* ─── Section base ───────────────────────────────────────────── */
-section{padding:88px 40px;position:relative;z-index:1;}
-.sec-header{margin-bottom:52px;}
-.sec-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
-.sec-title{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1.5px;}
-.sec-sub{font-size:16px;color:var(--muted);margin-top:10px;max-width:480px;line-height:1.65;}
+/* ─── Selection ──────────────────────────────────────────────── */
+::selection{background:var(--accent-soft);color:var(--text);}
 
 @media(max-width:640px){
-  section{padding:64px 16px;}
+  section{padding:56px 20px;}
+  .sec-header{margin-bottom:32px;}
 }
