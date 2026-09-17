@@ -1,134 +1,124 @@
 ---
 import '../styles/global.css';
+import { getBasePath, getLangFromUrl, getLocalePath, useTranslations } from '../i18n/utils';
+
 export interface Props {
-	title: string;
+	title?: string;
 }
-const { title } = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang)();
+const title = Astro.props.title || t.layout.title;
+
+// Absolute URLs for this page in every locale. Search engines need each
+// translation to point at all of them (itself included) before they treat the
+// pages as translations rather than duplicates.
+const site = Astro.site ?? new URL(Astro.url.origin);
+const basePath = getBasePath(Astro.url);
+const enUrl = new URL(getLocalePath('en', basePath), site).href;
+const arUrl = new URL(getLocalePath('ar', basePath), site).href;
+const canonicalUrl = lang === 'ar' ? arUrl : enUrl;
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f0f0f" id="themeColor">
+
+  <!-- Theme bootstrap. is:inline keeps this out of Astro's bundle so it runs
+       synchronously in <head>, BEFORE the first paint — otherwise a visitor who
+       picked light would get a flash of the dark palette on every page load.
+       Stored choice wins; with no stored choice we follow the OS setting. -->
+  <script is:inline>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('theme'); } catch (e) { /* private mode */ }
+      var theme = (stored === 'light' || stored === 'dark')
+        ? stored
+        : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+
+      // Tells the stylesheet that JavaScript is running, which is the only
+      // condition under which the scroll-reveal is allowed to hide anything.
+      document.documentElement.classList.add('js');
+
+      // Keep the mobile browser chrome in step with the page background.
+      var meta = document.getElementById('themeColor');
+      if (meta) meta.setAttribute('content', theme === 'light' ? '#fbfbfb' : '#0f0f0f');
+    })();
+  </script>
   <title>{title}</title>
-  <meta name="description" content="Web & Flutter Developer specializing in Angular, TypeScript, and Flutter. Building responsive web apps and cross-platform mobile experiences from Egypt.">
-  <meta name="keywords" content="Taha Mahmoud, Web Developer, Flutter Developer, Angular, TypeScript, Supabase, Mobile Developer, Egypt, Assiut">
+  <meta name="description" content={t.layout.description}>
+  <meta name="keywords" content={t.layout.keywords}>
   <meta name="author" content="Taha Mahmoud">
-  <meta property="og:title" content="Taha Mahmoud — Web & Flutter Developer">
-  <meta property="og:description" content="Building responsive web apps and cross-platform Flutter experiences with Angular, TypeScript, and Supabase.">
+  <link rel="canonical" href={canonicalUrl}>
+  <link rel="alternate" hreflang="en" href={enUrl}>
+  <link rel="alternate" hreflang="ar" href={arUrl}>
+  <!-- Which version a visitor with no matching language should land on. -->
+  <link rel="alternate" hreflang="x-default" href={enUrl}>
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={t.layout.description}>
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://taha-dev.vercel.app">
+  <meta property="og:url" content={canonicalUrl}>
+  <meta property="og:locale" content={lang === 'ar' ? 'ar_EG' : 'en_US'}>
+  <meta property="og:locale:alternate" content={lang === 'ar' ? 'en_US' : 'ar_EG'}>
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Taha Mahmoud — Web & Flutter Developer">
-  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="twitter:title" content={title}>
+  <!-- Tab icon. The .ico covers the bare /favicon.ico request browsers make on
+       their own (and older ones that ignore the tags); the PNGs are what every
+       current browser picks once it has read the markup. -->
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-  <style>
-    /* ─── Progress bar ───────────────────────────────────────────── */
-    #progress{position:fixed;top:0;left:0;height:2px;background:var(--green);width:0%;z-index:9999;transition:width 0.1s linear;box-shadow:0 0 8px var(--green);}
-
-    /* ─── Custom cursor ──────────────────────────────────────────── */
-    .cursor{position:fixed;top:0;left:0;width:8px;height:18px;background:var(--green);opacity:0.9;pointer-events:none;z-index:9998;animation:blink 1s steps(1) infinite;border-radius:1px;will-change:transform;}
-    .cursor-ring{position:fixed;top:0;left:0;width:32px;height:32px;border:1px solid rgba(57,211,83,0.3);border-radius:50%;pointer-events:none;z-index:9997;transition:width 0.15s ease-out,height 0.15s ease-out,border-color 0.15s ease-out;will-change:transform;}
-  </style>
+  <!-- Three Latin families and one Arabic, in a single request. Source Serif
+       carries the headings, Inter everything that gets read, JetBrains Mono
+       the small print — and IBM Plex Sans Arabic every Arabic glyph on the
+       site, since none of the other three cover the script. Weights are
+       deliberately few: 400 and 500/600 are the whole hierarchy. -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="progress"></div>
-  <div class="cursor" id="cur"></div>
-  <div class="cursor-ring" id="ring"></div>
-
   <slot />
 
   <script>
-    /* ── Scroll progress ── */
-    window.addEventListener('scroll', () => {
-      const h = document.documentElement;
-      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
-      const prog = document.getElementById('progress');
-      if (prog) prog.style.width = pct + '%';
-    });
-
-    /* ── Cursor ──
-       cursor:none is set all over global.css assuming this custom cursor is
-       running. On touch devices, with prefers-reduced-motion, or if this
-       script never gets this far, that would leave visitors with no cursor
-       at all — so only commit to hiding the native one once we know a fine
-       pointer is present and motion is allowed. */
-    const cur = document.getElementById('cur');
-    const ring = document.getElementById('ring');
-    const canUseCustomCursor =
-      window.matchMedia('(pointer: fine)').matches &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (canUseCustomCursor) {
-      document.documentElement.classList.add('has-custom-cursor');
-      document.addEventListener('mousemove', e => {
-        if (cur) cur.style.transform = `translate3d(calc(${e.clientX}px - 2px), calc(${e.clientY}px - 50%), 0)`;
-        if (ring) ring.style.transform = `translate3d(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%), 0)`;
-      }, { passive: true });
-    }
-
-    // Reveal animations
-    const obs = new IntersectionObserver(es => {
-      es.forEach((e, i) => {
-        if (e.isIntersecting) setTimeout(() => e.target.classList.add('on'), i * 45);
+    /* ── Reveal on scroll ──
+       The site's only scroll-driven effect: a section fades the last 10px
+       into place once, then the observer forgets about it. No parallax, no
+       scroll hijacking, nothing that keeps running while you read.
+       prefers-reduced-motion is handled in CSS, which leaves .reveal fully
+       visible — so this still runs, it just has nothing to animate. */
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('on');
+        observer.unobserve(entry.target);
       });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
-    // Add cursor hover effect to elements
-    const addCursorHover = () => {
-      if (!canUseCustomCursor) return;
-      document.querySelectorAll('a,button,.skill-chip,.project-card,.contact-item,.filter-btn').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-          const r = document.getElementById('ring');
-          if (r) { r.style.width = '48px'; r.style.height = '48px'; r.style.borderColor = 'rgba(57,211,83,0.5)'; }
-        });
-        el.addEventListener('mouseleave', () => {
-          const r = document.getElementById('ring');
-          if (r) { r.style.width = '32px'; r.style.height = '32px'; r.style.borderColor = 'rgba(57,211,83,0.3)'; }
-        });
+    const watchReveals = () => {
+      document.querySelectorAll('.reveal:not(.on)').forEach(el => revealObserver.observe(el));
+    };
+
+    /* Safety net. The hidden state only lifts when the observer delivers, and
+       an observer that never delivers — a tab the browser is not painting, an
+       extension, a bug — would leave the page blank. Sweeping on load and once
+       more shortly after means anything already on screen shows up regardless. */
+    const sweepReveals = () => {
+      document.querySelectorAll('.reveal:not(.on)').forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('on');
       });
     };
 
-    // Run on initial load
-    addCursorHover();
-    
-    // Support Astro view transitions if they are used
-    document.addEventListener('astro:page-load', () => {
-      addCursorHover();
-      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-    });
-  </script>
-
-  <!-- Smooth Scroll (Lenis) -->
-  <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
-  <script>
-    // Lenis re-times every scroll with inertia — exactly the kind of motion
-    // prefers-reduced-motion asks sites to skip. Leave native (instant) scroll
-    // in place for those users instead of smoothing it.
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const lenis = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        direction: 'vertical',
-        gestureDirection: 'vertical',
-        smooth: true,
-        mouseMultiplier: 1,
-        smoothTouch: false,
-        touchMultiplier: 2,
-        infinite: false,
-      });
-
-      function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
-    }
+    watchReveals();
+    window.addEventListener('load', sweepReveals);
+    window.setTimeout(sweepReveals, 1200);
+    // Support Astro view transitions if they are ever switched on.
+    document.addEventListener('astro:page-load', watchReveals);
   </script>
 </body>
 </html>

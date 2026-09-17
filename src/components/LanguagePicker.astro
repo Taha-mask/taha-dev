@@ -1,0 +1,47 @@
+---
+import { getBasePath, getLangFromUrl, getLocalePath, languages, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang)();
+const otherLang = lang === 'en' ? 'ar' : 'en';
+const otherLangLabel = languages[otherLang];
+
+// Switch locale without leaving the page: strip the prefix off the current
+// path, then re-add the other locale's.
+const targetPath = getLocalePath(otherLang, getBasePath(Astro.url));
+---
+
+<a
+  href={targetPath}
+  class="lang-picker"
+  lang={otherLang}
+  hreflang={otherLang}
+  aria-label={`${t.a11y.switchTo} ${otherLangLabel}`}
+>
+  {otherLangLabel}
+</a>
+
+<style>
+/* Same shape and weight as the theme toggle beside it — they are two switches
+   of the same kind, so they should not look like two different controls. */
+.lang-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.lang-picker:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+</style>
