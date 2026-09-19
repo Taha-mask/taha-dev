@@ -5,7 +5,10 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang)();
 ---
 <section class="spec">
-  <ul class="spec-list">
+  <!-- reveal-group, so the three columns arrive left to right rather than
+       all at once — the order is the point, and 55ms apart is enough to
+       read as an order without anyone noticing they waited. -->
+  <ul class="spec-list reveal-group">
     <li>
       <h2>{t.spec.webLabel}</h2>
       <p dir="ltr">{t.spec.webSub}</p>
@@ -37,6 +40,21 @@ const t = useTranslations(lang)();
   display:grid;grid-template-columns:repeat(3,1fr);
   gap:32px;
 }
+/* Each column is its own hover target. There is no border and no background
+   to change, so the whole response is a 6px accent rule that draws itself
+   above the heading and the sub-line coming up to full strength — the
+   column acknowledges the pointer without becoming a card. */
+.spec-list li{
+  position:relative;
+  padding-top:14px;
+}
+.spec-list li::before{
+  content:'';position:absolute;top:0;inset-inline-start:0;
+  width:24px;height:1px;background:var(--border-strong);
+  transition:width var(--t-mid) var(--ease-out),background-color var(--t-mid) var(--ease-soft);
+}
+.spec-list li:hover::before{width:42px;background:var(--accent);}
+
 /* Headings, not just bold text: these are the site's three subject areas, so
    they belong in the document outline. Sized as small print all the same. */
 .spec-list h2{
@@ -46,7 +64,9 @@ const t = useTranslations(lang)();
 .spec-list p{
   font-family:var(--font-mono);font-size:12.5px;
   color:var(--text-3);line-height:1.6;margin-top:6px;
+  transition:color var(--t-mid) var(--ease-soft);
 }
+.spec-list li:hover p{color:var(--text-2);}
 
 @media(max-width:640px){
   .spec{padding-top:32px;padding-bottom:32px;}

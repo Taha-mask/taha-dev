@@ -98,6 +98,34 @@ img{display:block;max-width:100%;}
   --radius:8px;
   --radius-sm:5px;
 
+  /* ── Motion ──
+     Three curves and three speeds, and that is the whole vocabulary. Every
+     transition on the site picks from here, which is what stops twelve
+     components each inventing their own timing and the page feeling like it
+     was assembled from parts.
+
+       --ease-out   the default. Fast to start, long slow settle — things
+                    arriving (a revealed section, a panel, a lifted card).
+       --ease-soft  symmetrical, for state that swaps rather than arrives
+                    (colour, border, opacity on hover).
+       --ease-in    for things leaving, which should go quickly.
+
+     The durations are short on purpose: 120ms is the threshold under which a
+     hover reads as instant, and anything a pointer triggers should. Only
+     entrances get the long one. */
+  --ease-out:cubic-bezier(0.22,1,0.36,1);
+  --ease-soft:cubic-bezier(0.4,0,0.2,1);
+  --ease-in:cubic-bezier(0.4,0,1,1);
+
+  --t-fast:0.14s;
+  --t-mid:0.28s;
+  --t-slow:0.62s;
+
+  /* How far a revealed element travels, and how far a hovered row nudges.
+     Kept as tokens so the whole page's sense of movement is two numbers. */
+  --rise:16px;
+  --nudge:3px;
+
   /* The reading measure. Inter's ch unit is wide (its zero is 0.63em), so 62
      of them land at roughly 72 characters a line — past ~75 the eye starts
      losing its place on the carriage return. */
@@ -197,9 +225,20 @@ body > section + section{border-top:1px solid var(--border);}
   letter-spacing:0.14em;text-transform:uppercase;
   color:var(--text-3);margin-bottom:14px;
 }
+/* The rule draws itself when the header arrives. It is the one ornament in
+   the design, so it is also the one place worth animating for its own sake —
+   a 22px line growing from nothing is the visual equivalent of clearing your
+   throat before a section starts. transform, not width, so it is composited
+   rather than re-laying-out the flex row on every frame. */
 .sec-tag::before{
   content:'';width:22px;height:1px;background:var(--accent);flex-shrink:0;
+  transform:scaleX(0);transform-origin:left center;
+  transition:transform 0.7s var(--ease-out) 0.1s;
 }
+/* transform-origin takes no logical keywords, so the RTL side is spelled out. */
+[dir="rtl"] .sec-tag::before{transform-origin:right center;}
+html:not(.js) .sec-tag::before,
+.reveal.on .sec-tag::before{transform:scaleX(1);}
 .sec-title{font-size:clamp(26px,3.4vw,34px);}
 .sec-sub{font-size:16px;color:var(--text-2);margin-top:12px;}
 
@@ -211,20 +250,51 @@ body > section + section{border-top:1px solid var(--border);}
   color:var(--accent);text-decoration:underline;
   text-decoration-thickness:1px;text-underline-offset:3px;
   text-decoration-color:var(--accent-line);
-  transition:text-decoration-color 0.15s;
+  transition:
+    text-decoration-color var(--t-fast) var(--ease-soft),
+    text-underline-offset var(--t-mid) var(--ease-out),
+    color var(--t-fast) var(--ease-soft);
 }
-.link:hover{text-decoration-color:var(--accent);}
+/* The underline drops a pixel away from the baseline on hover as well as
+   darkening. It is a small thing, but a link that only changes colour can be
+   mistaken for a page repaint; one that moves is unmistakably responding to
+   you. */
+.link:hover{text-decoration-color:var(--accent);text-underline-offset:4px;color:var(--accent-strong);}
 
 /* ─── Buttons ────────────────────────────────────────────────── */
+/* A button gets three states, not one: rest, hover (it lifts 1px and the
+   shadow appears under it), and active (it goes back down past rest, which is
+   what "pressed" feels like). One pixel is enough — the point is that the
+   surface answers the pointer, not that it jumps. */
 .btn{
+  position:relative;overflow:hidden;
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   font-family:var(--font-sans);font-size:15px;font-weight:500;
   padding:11px 20px;border-radius:var(--radius);
   border:1px solid transparent;text-decoration:none;cursor:pointer;
-  transition:background-color 0.18s,border-color 0.18s,color 0.18s;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft),
+    transform var(--t-fast) var(--ease-out),
+    box-shadow var(--t-mid) var(--ease-out);
 }
+.btn:hover{transform:translateY(-1px);}
+.btn:active{transform:translateY(1px);transition-duration:0.06s;}
+
 .btn-primary{background:var(--accent);color:var(--accent-fg);}
-.btn-primary:hover{background:var(--accent-strong);}
+.btn-primary:hover{background:var(--accent-strong);box-shadow:0 6px 18px var(--accent-soft);}
+/* A single pass of light across the fill on hover. It runs once per hover and
+   stops — a sheen that loops is a casino button. */
+.btn-primary::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(251,251,251,0.28) 50%,transparent 65%);
+  transform:translateX(-120%);
+  transition:transform 0.65s var(--ease-out);
+  pointer-events:none;
+}
+.btn-primary:hover::after{transform:translateX(120%);}
+
 .btn-ghost{border-color:var(--border-strong);color:var(--text);background:transparent;}
 .btn-ghost:hover{border-color:var(--text-3);background:var(--surface);}
 
@@ -239,7 +309,14 @@ body > section + section{border-top:1px solid var(--border);}
   font-family:var(--font-mono);font-size:12px;
   color:var(--text-3);background:var(--surface-2);
   padding:3px 8px;border-radius:var(--radius-sm);white-space:nowrap;
+  transition:
+    color var(--t-fast) var(--ease-soft),
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-fast) var(--ease-out);
 }
+/* Tech tags sit in rows of eight or ten. Making each one answer the pointer
+   turns a static strip into something the eye can pick through. */
+.tag:hover{color:var(--text);background:var(--surface);transform:translateY(-2px);}
 
 /* ─── Theme swap ─────────────────────────────────────────────────
    Only live while the toggle is firing (Navbar.astro adds the class and
@@ -267,17 +344,83 @@ select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
    state only ever exists where the script that un-hides it is running. A
    page whose content starts at opacity:0 and waits for JavaScript is a page
    that shows a visitor nothing when anything at all goes wrong. */
-html.js .reveal{opacity:0;transform:translateY(10px);transition:opacity 0.5s ease,transform 0.5s ease;}
-html.js .reveal.on{opacity:1;transform:none;}
+html.js .reveal{
+  opacity:0;
+  transform:translateY(var(--rise));
+  transition:
+    opacity var(--t-slow) var(--ease-out) var(--reveal-delay,0ms),
+    transform var(--t-slow) var(--ease-out) var(--reveal-delay,0ms),
+    filter var(--t-slow) var(--ease-out) var(--reveal-delay,0ms);
+  /* A hair of blur on the way in. It is the difference between text that
+     appears and text that focuses — the eye reads the second as arriving from
+     somewhere. Two pixels, gone in half a second; it should never be
+     noticeable as blur, only as softness. */
+  filter:blur(3px);
+  will-change:opacity,transform;
+}
+html.js .reveal.on{
+  opacity:1;
+  transform:none;
+  filter:none;
+  /* Dropped once the element has landed so a few dozen promoted layers are
+     not sitting on the compositor for the rest of the visit. */
+  will-change:auto;
+}
+
+/* ── Staggered children ──
+   A list whose rows all arrive at the same instant reads as one block
+   appearing. Ten rows arriving 55ms apart reads as a list being dealt out,
+   and costs nothing but a variable. The delay is set per child by the
+   observer in Layout.astro, capped so a long list never leaves the visitor
+   waiting on row twenty. */
+html.js .reveal-group > *{
+  opacity:0;
+  transform:translateY(calc(var(--rise) * 0.75));
+  transition:
+    opacity var(--t-slow) var(--ease-out) var(--reveal-delay,0ms),
+    transform var(--t-slow) var(--ease-out) var(--reveal-delay,0ms);
+}
+html.js .reveal-group.on > *{opacity:1;transform:none;}
+
+/* ── Line reveal ──
+   For a heading split into words by the markup: each word sits in a box with
+   its overflow clipped, and rises into it from below. The effect is the text
+   being uncovered rather than faded in, which is what makes a hero feel
+   composed instead of assembled.
+
+   The outer span carries the clip, the inner one moves. Both are inline-block
+   so the line still wraps on word boundaries and RTL still lays out right. */
+.line-reveal{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:0.12em;margin-bottom:-0.12em;}
+.line-reveal > span{
+  display:inline-block;
+  transform:translateY(105%);
+  animation:word-rise 0.9s var(--ease-out) forwards;
+  animation-delay:var(--reveal-delay,0ms);
+}
+@keyframes word-rise{to{transform:translateY(0);}}
+
+/* ── Entrance ──
+   Everything in the hero that is not the name: a shorter, plainer rise, run
+   on load rather than on scroll because it is already on screen. */
+.enter{opacity:0;animation:enter-rise 0.75s var(--ease-out) forwards;animation-delay:var(--reveal-delay,0ms);}
+@keyframes enter-rise{
+  from{opacity:0;transform:translateY(12px);}
+  to{opacity:1;transform:none;}
+}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{
     animation-duration:0.01ms!important;
     animation-iteration-count:1!important;
+    animation-delay:0ms!important;
     transition-duration:0.01ms!important;
+    transition-delay:0ms!important;
     scroll-behavior:auto!important;
   }
-  html.js .reveal{opacity:1;transform:none;}
+  html.js .reveal{opacity:1;transform:none;filter:none;}
+  html.js .reveal-group > *{opacity:1;transform:none;}
+  .line-reveal > span{transform:none;}
+  .enter{opacity:1;}
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────── */
@@ -292,4 +435,94 @@ html.js .reveal.on{opacity:1;transform:none;}
 @media(max-width:640px){
   section{padding:56px 20px;}
   .sec-header{margin-bottom:32px;}
+}
+
+/* ─── Ambient background ─────────────────────────────────────────
+   One fixed layer behind everything, doing two jobs.
+
+   The first is grain: a 160px tile of fractal noise at 3% opacity. It is
+   invisible as texture and obvious in its absence — a flat #0f0f0f field is
+   what makes a page read as "a div with a background colour", and a little
+   tooth is what makes it read as a surface. Because it is fixed, it does not
+   scroll with the content, so it never shimmers.
+
+   The second is two very large, very faint accent auras that drift. They are
+   1100px wide at 6% opacity, which at this size is roughly one shade of grey
+   of difference — you cannot point at them, you only notice that the corner
+   of the page is not the same as the middle. They move on a 44 and 58 second
+   cycle, deliberately coprime so the pair never lands back in the same
+   arrangement twice while anyone is looking.
+
+   Fixed + pointer-events:none + z-index:-1 puts it behind every section
+   without any of them needing a background of their own. */
+.page-bg{
+  position:fixed;inset:0;z-index:-1;
+  pointer-events:none;
+  overflow:hidden;
+  /* contain keeps the drifting children from ever being considered for
+     layout or paint outside this box. */
+  contain:strict;
+}
+
+.page-bg::after{
+  content:'';position:absolute;inset:0;
+  opacity:0.032;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme="light"] .page-bg::after{opacity:0.045;}
+
+.aura{
+  position:absolute;
+  width:1100px;height:1100px;
+  border-radius:50%;
+  /* The hard stop at 70% keeps the gradient's own edge off-screen; a radial
+     that fades all the way to transparent at its bounding box shows a faint
+     ring where the interpolation flattens out. */
+  background:radial-gradient(circle,var(--accent) 0%,transparent 70%);
+  opacity:0.06;
+  filter:blur(40px);
+  will-change:transform;
+}
+:root[data-theme="light"] .aura{opacity:0.09;}
+
+.aura-1{top:-380px;inset-inline-start:-260px;animation:drift-1 44s var(--ease-soft) infinite alternate;}
+.aura-2{bottom:-460px;inset-inline-end:-320px;animation:drift-2 58s var(--ease-soft) infinite alternate;}
+
+@keyframes drift-1{
+  from{transform:translate3d(0,0,0) scale(1);}
+  to{transform:translate3d(90px,70px,0) scale(1.14);}
+}
+@keyframes drift-2{
+  from{transform:translate3d(0,0,0) scale(1.1);}
+  to{transform:translate3d(-80px,-60px,0) scale(0.92);}
+}
+
+/* ─── Scroll progress ────────────────────────────────────────────
+   A one-pixel accent line along the bottom edge of the sticky header,
+   scaled by how far down the page you are. It replaces the header's own
+   bottom hairline rather than sitting under it, so it adds no height and no
+   second line.
+
+   scaleX on a transform, driven by a variable the scroll handler writes —
+   no layout, no paint, just the compositor. */
+.scroll-progress{
+  position:absolute;bottom:-1px;inset-inline-start:0;
+  width:100%;height:1px;
+  background:var(--accent);
+  transform:scaleX(var(--progress,0));
+  transform-origin:left center;
+  /* Opacity ramps in over the first few percent so the line does not sit
+     there as a stub at the top of the page. */
+  opacity:calc(var(--progress,0) * 6);
+  pointer-events:none;
+}
+[dir="rtl"] .scroll-progress{transform-origin:right center;}
+
+/* ─── Reduced motion ─────────────────────────────────────────────
+   The blanket rule further up already collapses every duration, which parks
+   the auras at their start position and freezes them. This just takes the
+   compositor hint back off so nothing is promoted for an animation that will
+   never run. */
+@media (prefers-reduced-motion: reduce){
+  .aura{will-change:auto;animation:none;}
 }

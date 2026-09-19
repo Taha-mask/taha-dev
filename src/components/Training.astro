@@ -17,7 +17,7 @@ const tr = t.trainingSec;
     <div class="tr-body">
       <h3 class="tr-org">{tr.org} <span class="tr-topic">{tr.topic}</span></h3>
       <p class="tr-desc">{tr.desc}</p>
-      <ul class="tr-points">
+      <ul class="tr-points reveal-group">
         {tr.points.map(point => <li>{point}</li>)}
       </ul>
       <div class="tr-tags" dir="ltr">
@@ -68,9 +68,20 @@ const tr = t.trainingSec;
   font-size:15px;color:var(--text-2);
   padding-inline-start:20px;position:relative;max-width:var(--measure);
 }
+/* The em dash slides in from the text and picks up the accent on hover, so
+   the bullet becomes the pointer's answer instead of needing a second mark. */
 .tr-points li::before{
   content:'—';position:absolute;inset-inline-start:0;
   color:var(--text-3);
+  transition:color var(--t-fast) var(--ease-soft),transform var(--t-mid) var(--ease-out);
+}
+.tr-points li{transition:color var(--t-fast) var(--ease-soft);}
+.tr-points li:hover{color:var(--text);}
+.tr-points li:hover::before{color:var(--accent);transform:translateX(3px);}
+:global([dir="rtl"]) .tr-points li:hover::before{transform:translateX(-3px);}
+
+@media (prefers-reduced-motion: reduce){
+  .tr-points li:hover::before{transform:none;}
 }
 
 .tr-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px;}

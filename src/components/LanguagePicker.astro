@@ -38,10 +38,18 @@ const targetPath = getLocalePath(otherLang, getBasePath(Astro.url));
   font-family: var(--font-mono);
   font-size: 12px;
   text-decoration: none;
-  transition: color 0.15s, border-color 0.15s;
+  /* Same transition set and the same press response as the theme toggle it
+     sits beside — two switches of the same kind should also feel the same. */
+  transition:
+    color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft),
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-fast) var(--ease-out);
 }
 .lang-picker:hover {
   color: var(--text);
   border-color: var(--border-strong);
+  background: var(--surface);
 }
+.lang-picker:active { transform: scale(0.92); }
 </style>

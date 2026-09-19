@@ -82,7 +82,7 @@ const otherBuilds = t.otherBuilds;
 
   <div class="other reveal">
     <h3 class="other-title">{t.projectsSec.otherTitle}</h3>
-    <ul class="other-list">
+    <ul class="other-list reveal-group">
       {otherBuilds.map(ob => (
         <li class="other-row">
           <div>
@@ -125,32 +125,65 @@ const otherBuilds = t.otherBuilds;
 }
 
 .cs-tab{
+  position:relative;
   display:flex;align-items:baseline;gap:10px;
   background:transparent;border:1px solid var(--border);
   border-radius:var(--radius);padding:9px 14px;
   text-align:start;white-space:nowrap;cursor:pointer;
-  color:var(--text-3);transition:color 0.15s,border-color 0.15s;
+  color:var(--text-3);
+  transition:
+    color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft),
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-mid) var(--ease-out);
 }
 @media(min-width:820px){
   .cs-tab{
     border:none;border-radius:0;
-    border-inline-start:2px solid transparent;
     margin-inline-start:-1px;padding:11px 16px;
     white-space:normal;
   }
+  /* The active marker is a pseudo-element rather than a border colour, so it
+     can grow from the middle of the tab instead of switching on. Two pixels
+     of accent unrolling down the rail is the clearest possible answer to
+     "which one did I just click". */
+  .cs-tab::before{
+    content:'';position:absolute;
+    inset-block:0;inset-inline-start:0;width:2px;
+    background:var(--accent);
+    transform:scaleY(0);transform-origin:center;
+    transition:transform var(--t-mid) var(--ease-out);
+  }
+  .cs-tab:hover::before{transform:scaleY(0.4);background:var(--border-strong);}
+  .cs-tab.active::before{transform:scaleY(1);background:var(--accent);}
 }
+/* Below 820px the rail is a row of pills, so the marker is the border again
+   and the nudge is horizontal. */
 .cs-tab:hover{color:var(--text);}
-.cs-tab.active{color:var(--text);border-color:var(--accent);}
-@media(min-width:820px){
-  .cs-tab.active{border-inline-start-color:var(--accent);}
+@media(max-width:819px){
+  .cs-tab:hover{background:var(--surface);transform:translateY(-2px);}
+  .cs-tab.active{border-color:var(--accent);}
 }
+.cs-tab.active{color:var(--text);}
 
-.cs-tab-num{font-family:var(--font-mono);font-size:11px;color:var(--text-3);}
+.cs-tab-num{
+  font-family:var(--font-mono);font-size:11px;color:var(--text-3);
+  transition:color var(--t-fast) var(--ease-soft);
+}
+.cs-tab.active .cs-tab-num{color:var(--accent);}
 .cs-tab-name{font-size:14px;font-weight:500;}
 
 /* ─── Panel ──────────────────────────────────────────────────── */
 .cs-panel{display:none;}
-.cs-panel.active{display:block;}
+/* A panel that swaps instantly reads as the page having been replaced; one
+   that rises 8px reads as this panel arriving. The animation re-runs on every
+   switch for free, because a CSS animation restarts whenever an element goes
+   from display:none to display:block. */
+.cs-panel.active{display:block;animation:panel-in 0.42s var(--ease-out);}
+@keyframes panel-in{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:none;}
+}
 .cs-panel:focus-visible{outline-offset:6px;}
 
 .cs-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;}
@@ -217,10 +250,34 @@ const otherBuilds = t.otherBuilds;
 }
 .other-list{list-style:none;}
 .other-row{
+  position:relative;
   display:flex;align-items:baseline;justify-content:space-between;gap:20px;
   padding:18px 0;border-bottom:1px solid var(--border);
+  transition:border-color var(--t-mid) var(--ease-soft);
 }
-.other-row h4{font-family:var(--font-sans);font-size:15px;font-weight:600;letter-spacing:0;}
+/* The row's whole hover response: it slides --nudge towards the reading
+   direction and a short accent tick appears in the margin it just left.
+   Padding, not transform, so the tick stays anchored where the row was —
+   the text moves, the mark does not. */
+.other-row > div{
+  transition:transform var(--t-mid) var(--ease-out),color var(--t-mid) var(--ease-soft);
+}
+.other-row::before{
+  content:'';position:absolute;
+  inset-inline-start:calc(var(--nudge) * -4);top:24px;
+  width:0;height:1px;background:var(--accent);
+  transition:width var(--t-mid) var(--ease-out);
+}
+.other-row:hover{border-color:var(--border-strong);}
+.other-row:hover::before{width:8px;}
+.other-row:hover > div{transform:translateX(var(--nudge));}
+:global([dir="rtl"]) .other-row:hover > div{transform:translateX(calc(var(--nudge) * -1));}
+
+.other-row h4{
+  font-family:var(--font-sans);font-size:15px;font-weight:600;letter-spacing:0;
+  transition:color var(--t-fast) var(--ease-soft);
+}
+.other-row:hover h4{color:var(--accent);}
 .other-row p{font-size:14px;color:var(--text-2);margin-top:3px;max-width:60ch;}
 .other-link{
   font-family:var(--font-mono);font-size:12px;
@@ -229,6 +286,11 @@ const otherBuilds = t.otherBuilds;
 
 @media(max-width:560px){
   .other-row{flex-direction:column;gap:8px;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .cs-tab:hover,.other-row:hover > div{transform:none;}
+  .cs-panel.active{animation:none;}
 }
 </style>
 

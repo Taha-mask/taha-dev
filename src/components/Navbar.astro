@@ -48,6 +48,11 @@ const t = useTranslations(lang)();
       </button>
     </div>
   </div>
+
+  <!-- Sits on the header's bottom edge, replacing the hairline rather than
+       adding a second line. Decorative: how far down the page you are is
+       already available to a screen reader from the scrollbar. -->
+  <div class="scroll-progress" aria-hidden="true"></div>
 </header>
 
 <div class="mobile-menu" id="mobileMenu" hidden>
@@ -70,7 +75,15 @@ const t = useTranslations(lang)();
   position:sticky;top:0;z-index:100;
   background:var(--bg);
   border-bottom:1px solid var(--border);
+  /* At the top of the page the bar is part of the hero; once you have
+     scrolled it is a thing floating over content, and it earns a shadow.
+     The class is set by the scroll handler in Layout.astro. */
+  transition:box-shadow var(--t-mid) var(--ease-soft),border-color var(--t-mid) var(--ease-soft);
 }
+/* position:sticky is itself a positioned element, so the header is already
+   the containing block the progress line needs — no extra wrapper. */
+.site-head.scrolled{box-shadow:0 1px 20px rgba(0,0,0,0.22);}
+:global(:root[data-theme="light"]) .site-head.scrolled{box-shadow:0 1px 20px rgba(15,15,15,0.07);}
 .head-inner{
   max-width:1060px;margin-inline:auto;
   padding:0 28px;height:64px;
@@ -83,16 +96,46 @@ const t = useTranslations(lang)();
   white-space:nowrap;unicode-bidi:isolate;
 }
 /* The angle brackets are the signature; keeping them a step back stops the
-   wordmark reading as punctuation soup. */
-.wordmark .bracket{color:var(--text-3);}
+   wordmark reading as punctuation soup. On hover they come up to full
+   strength and ease outwards, as if the tag were opening slightly. It is the
+   smallest possible joke and it only costs two transitions. */
+.wordmark .bracket{
+  color:var(--text-3);
+  display:inline-block;
+  transition:color var(--t-mid) var(--ease-soft),transform var(--t-mid) var(--ease-out);
+}
+.wordmark:hover .bracket{color:var(--accent);}
+.wordmark:hover .bracket:first-of-type{transform:translateX(-2px);}
+.wordmark:hover .bracket:last-of-type{transform:translateX(2px);}
 
 .nav-links{display:flex;gap:4px;margin-inline-start:auto;}
 .nav-links a{
+  position:relative;
   font-size:14px;color:var(--text-3);text-decoration:none;
   padding:6px 10px;border-radius:var(--radius-sm);
-  transition:color 0.15s;
+  transition:color var(--t-fast) var(--ease-soft);
 }
 .nav-links a:hover{color:var(--text);}
+
+/* An underline that grows out of the centre on hover, and stays put while
+   that section is the one being read. Same mark for both states, so hovering
+   a link is a preview of what "you are here" looks like.
+
+   It is drawn under the text rather than under the padding box — an underline
+   wider than the word it belongs to reads as a button, not a link. */
+.nav-links a::after{
+  content:'';position:absolute;
+  bottom:2px;left:10px;right:10px;height:1px;
+  background:currentColor;
+  transform:scaleX(0);
+  transition:transform var(--t-mid) var(--ease-out),background-color var(--t-fast) var(--ease-soft);
+}
+.nav-links a:hover::after{transform:scaleX(1);}
+
+/* The current section's link is held at full strength with its underline
+   drawn in the accent — the only place the accent appears in the header. */
+.nav-links a.current{color:var(--text);}
+.nav-links a.current::after{transform:scaleX(1);background:var(--accent);}
 
 .head-actions{display:flex;align-items:center;gap:12px;}
 
@@ -100,11 +143,28 @@ const t = useTranslations(lang)();
   display:inline-flex;align-items:center;gap:7px;
   font-size:13px;color:var(--text-3);white-space:nowrap;
 }
-/* Static, not pulsing. A dot that blinks forever in the corner of the screen
-   is movement the visitor has to actively ignore. */
+/* Not a blinking dot — that is movement in the corner of the screen the
+   visitor has to actively ignore for the whole visit. This is a halo that
+   breathes out and fades, four seconds apart, on a pseudo-element so the dot
+   itself never moves. At 0.35 opacity over 4s it registers as "this is live"
+   somewhere below conscious attention, which is the entire job. */
+.status{position:relative;}
 .status-dot{
+  position:relative;
   width:6px;height:6px;border-radius:50%;
   background:var(--accent);flex-shrink:0;
+}
+.status-dot::after{
+  content:'';position:absolute;inset:0;
+  border-radius:50%;
+  background:var(--accent);
+  animation:halo 4s var(--ease-out) infinite;
+}
+@keyframes halo{
+  0%{transform:scale(1);opacity:0.35;}
+  /* The whole pulse happens in the first 45% of the cycle; the rest is the
+     pause that keeps it from reading as a blink. */
+  45%,100%{transform:scale(3);opacity:0;}
 }
 
 .icon-btn{
@@ -112,9 +172,29 @@ const t = useTranslations(lang)();
   width:32px;height:32px;padding:0;flex-shrink:0;
   background:transparent;border:1px solid var(--border);
   border-radius:var(--radius-sm);color:var(--text-3);cursor:pointer;
-  transition:color 0.15s,border-color 0.15s;
+  transition:
+    color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft),
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-fast) var(--ease-out);
 }
-.icon-btn:hover{color:var(--text);border-color:var(--border-strong);}
+.icon-btn:hover{color:var(--text);border-color:var(--border-strong);background:var(--surface);}
+/* Scaling down on press is what makes a 32px square feel like a button
+   rather than a picture of one. */
+.icon-btn:active{transform:scale(0.92);}
+
+/* The sun and moon rotate through the swap rather than cutting. Only the
+   incoming icon is in the DOM at any moment (the two are display-toggled by
+   the theme attribute), so this is an entrance, not a cross-fade. */
+.icon-sun,.icon-moon{animation:icon-turn 0.4s var(--ease-out);}
+@keyframes icon-turn{
+  from{transform:rotate(-70deg) scale(0.7);opacity:0;}
+  to{transform:rotate(0) scale(1);opacity:1;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .status-dot::after{display:none;}
+}
 
 /* data-theme lives on <html>, outside this component, so the ancestor half of
    the selector needs :global() to survive Astro's style scoping. */
@@ -126,7 +206,7 @@ const t = useTranslations(lang)();
 .hamburger{display:none;flex-direction:column;gap:5px;}
 .hamburger span{
   display:block;width:16px;height:1.5px;border-radius:2px;
-  background:currentColor;transition:transform 0.2s,opacity 0.2s;
+  background:currentColor;transition:transform var(--t-mid) var(--ease-out);
 }
 .hamburger.open span:nth-child(1){transform:translateY(3.25px) rotate(45deg);}
 .hamburger.open span:nth-child(2){transform:translateY(-3.25px) rotate(-45deg);}
@@ -138,11 +218,34 @@ const t = useTranslations(lang)();
   padding:8px 20px 20px;
   flex-direction:column;
 }
-.mobile-menu:not([hidden]){display:flex;}
+.mobile-menu:not([hidden]){display:flex;animation:menu-drop 0.26s var(--ease-out);}
+@keyframes menu-drop{
+  from{opacity:0;transform:translateY(-8px);}
+  to{opacity:1;transform:none;}
+}
+
 .mobile-menu a{
   color:var(--text);text-decoration:none;font-size:16px;
   padding:14px 0;border-bottom:1px solid var(--border);
+  transition:padding-inline-start var(--t-mid) var(--ease-out),color var(--t-fast) var(--ease-soft);
+  /* Each link deals in after the panel, 40ms apart. The panel opening and
+     the links arriving as one block is the difference between a menu that
+     drops and a menu that unfolds. */
+  animation:menu-item 0.4s var(--ease-out) backwards;
 }
+.mobile-menu a:nth-child(1){animation-delay:0.04s;}
+.mobile-menu a:nth-child(2){animation-delay:0.08s;}
+.mobile-menu a:nth-child(3){animation-delay:0.12s;}
+.mobile-menu a:nth-child(4){animation-delay:0.16s;}
+.mobile-menu a:nth-child(5){animation-delay:0.20s;}
+.mobile-menu a:nth-child(6){animation-delay:0.24s;}
+@keyframes menu-item{
+  from{opacity:0;transform:translateY(-6px);}
+  to{opacity:1;transform:none;}
+}
+/* Touch has no hover, so this is really the :active state — the row gives
+   way under a finger. */
+.mobile-menu a:active{padding-inline-start:8px;color:var(--accent);}
 .menu-status{
   display:inline-flex;align-items:center;gap:8px;
   font-size:13px;color:var(--text-3);padding-top:16px;

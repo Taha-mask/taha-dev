@@ -25,7 +25,7 @@ const facts = [
     <h2 class="sec-title">{a.title}</h2>
   </div>
 
-  <dl class="facts reveal">
+  <dl class="facts reveal-group">
     {facts.map(fact => (
       <div class="fact">
         <dt>{fact.label}</dt>
@@ -82,6 +82,8 @@ const facts = [
 }
 
 .fact {
+  position: relative;
+
   display: grid;
   grid-template-columns: 125px minmax(0, 1fr);
   align-items: baseline;
@@ -92,15 +94,45 @@ const facts = [
 
   border-bottom: 1px solid var(--border);
 
+  /* Same curve and duration as every other hovered row on the page — this
+     row already nudged before the motion pass, it just did it on its own
+     timing. */
   transition:
-    border-color 180ms ease,
-    transform 180ms ease;
+    border-color var(--t-mid) var(--ease-soft),
+    transform var(--t-mid) var(--ease-out);
+}
+
+/* The accent tick in the margin, matching the project rows and the education
+   entries. */
+.fact::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -12px;
+  top: 25px;
+
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+
+  transition: width var(--t-mid) var(--ease-out);
 }
 
 .fact:hover {
   border-color: var(--text-3);
-  transform: translateX(3px);
+  transform: translateX(var(--nudge));
 }
+
+.fact:hover::before { width: 8px; }
+
+:global([dir="rtl"]) .fact:hover {
+  transform: translateX(calc(var(--nudge) * -1));
+}
+
+.fact dt,
+.fact dd { transition: color var(--t-fast) var(--ease-soft); }
+
+.fact:hover dt { color: var(--accent); }
+.fact:hover dd { color: var(--text); }
 
 .fact dt {
   margin: 0;
@@ -136,7 +168,7 @@ const facts = [
   position: relative;
   color: inherit;
   text-decoration: none;
-  transition: color 180ms ease;
+  transition: color var(--t-mid) var(--ease-soft);
 }
 
 .link::after {
@@ -150,9 +182,11 @@ const facts = [
   height: 1px;
   background: currentColor;
 
+  /* Wipes out to the right and back in from the left, so the underline
+     travels rather than simply appearing. */
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform 220ms ease;
+  transition: transform var(--t-mid) var(--ease-out);
 }
 
 .link:hover {
@@ -223,6 +257,13 @@ const facts = [
   }
 
   .fact:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fact:hover,
+  :global([dir="rtl"]) .fact:hover {
     transform: none;
   }
 }

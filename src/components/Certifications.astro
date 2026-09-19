@@ -12,9 +12,12 @@ const certs = t.certsSec;
     <p class="sec-sub">{certs.sub}</p>
   </div>
 
-  <ul class="cert-grid">
+  <!-- The grid staggers its own children, so each card does not need its own
+       .reveal — one observer target instead of six, and they arrive in reading
+       order rather than in whatever order the observer happened to fire. -->
+  <ul class="cert-grid reveal-group">
     {certs.featured.map(cert => (
-      <li class="cert reveal">
+      <li class="cert">
         <!--
           A real link to the file, not a bare button: the lightbox below
           upgrades it on click, and without JS the certificate still opens.
@@ -125,18 +128,47 @@ const certs = t.certsSec;
   background:var(--surface-2);
   border:1px solid var(--border);border-radius:var(--radius);
   overflow:hidden;cursor:zoom-in;
-  transition:border-color 0.18s;
+  transition:
+    border-color var(--t-mid) var(--ease-soft),
+    transform var(--t-mid) var(--ease-out),
+    box-shadow var(--t-mid) var(--ease-out);
 }
+/* The scan pushes in slightly under the pointer while the frame holds still —
+   the crop is what moves, not the card. Combined with the zoom-in cursor it
+   says "this opens" before the visitor has to guess. 1.04 is about as far as
+   a top-anchored crop can go before the certificate's title leaves the box. */
 .cert-shot img{
   width:100%;height:100%;
   object-fit:cover;object-position:top center;
+  transition:transform 0.55s var(--ease-out);
 }
-.cert-shot:hover{border-color:var(--border-strong);}
+.cert-shot:hover{
+  border-color:var(--border-strong);
+  transform:translateY(-3px);
+  box-shadow:0 10px 26px rgba(0,0,0,0.22);
+}
+:global(:root[data-theme="light"]) .cert-shot:hover{box-shadow:0 10px 26px rgba(15,15,15,0.09);}
+.cert-shot:hover img{transform:scale(1.04);}
+.cert-shot:active{transform:translateY(-1px);transition-duration:0.08s;}
+
+/* A wash from the bottom edge on hover, so the thumbnail reads as something
+   with a state rather than a flat picture. No icon and no "view" label — the
+   cursor already said it. */
+.cert-shot::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(15,15,15,0.35),transparent 55%);
+  opacity:0;
+  transition:opacity var(--t-mid) var(--ease-soft);
+  pointer-events:none;
+}
+.cert-shot:hover::after{opacity:1;}
 
 .cert-title{
   font-family:var(--font-sans);font-size:15px;font-weight:600;
   letter-spacing:0;line-height:1.45;margin-top:12px;
+  transition:color var(--t-fast) var(--ease-soft);
 }
+.cert:hover .cert-title,.cert-row:hover .cert-row-title{color:var(--accent);}
 .cert-issuer{font-size:13.5px;color:var(--text-3);line-height:1.6;margin-top:3px;}
 /* Course and issuer names keep their official Latin spelling in the Arabic
    locale, so isolate them from the surrounding RTL run. */
@@ -145,8 +177,17 @@ const certs = t.certsSec;
 /* ─── Second tier ────────────────────────────────────────────── */
 .cert-more-wrap{margin-top:36px;}
 .cert-toggle{font-size:14px;padding:9px 16px;}
-.cert-toggle svg{transition:transform 0.2s;}
+.cert-toggle svg{transition:transform var(--t-mid) var(--ease-out);}
 .cert-toggle[aria-expanded="true"] svg{transform:rotate(180deg);}
+
+/* The second tier is shown and hidden with the `hidden` attribute, so it goes
+   from display:none to display:block — which restarts this animation every
+   time it opens, with no JS involvement at all. */
+.cert-more:not([hidden]){animation:more-in 0.4s var(--ease-out);}
+@keyframes more-in{
+  from{opacity:0;transform:translateY(-8px);}
+  to{opacity:1;transform:none;}
+}
 
 .cert-more{margin-top:28px;}
 .cert-more-title{font-size:18px;margin-bottom:4px;}
@@ -155,11 +196,21 @@ const certs = t.certsSec;
 .cert-row{
   display:flex;align-items:flex-start;gap:16px;
   padding:16px 0;border-bottom:1px solid var(--border);
+  transition:border-color var(--t-mid) var(--ease-soft);
 }
+.cert-row:hover{border-color:var(--border-strong);}
 .cert-row:first-child{border-top:1px solid var(--border);}
 .cert-row-shot{width:88px;flex-shrink:0;aspect-ratio:4/3;border-radius:var(--radius-sm);}
-.cert-row-body{flex:1;min-width:0;}
-.cert-row-title{font-family:var(--font-sans);font-size:15px;font-weight:600;letter-spacing:0;line-height:1.45;}
+.cert-row-body{
+  flex:1;min-width:0;
+  transition:transform var(--t-mid) var(--ease-out);
+}
+.cert-row:hover .cert-row-body{transform:translateX(var(--nudge));}
+:global([dir="rtl"]) .cert-row:hover .cert-row-body{transform:translateX(calc(var(--nudge) * -1));}
+.cert-row-title{
+  font-family:var(--font-sans);font-size:15px;font-weight:600;letter-spacing:0;line-height:1.45;
+  transition:color var(--t-fast) var(--ease-soft);
+}
 .cert-row-issuer{font-size:13px;color:var(--text-3);margin-top:3px;}
 .cert-row-note{font-size:14px;color:var(--text-2);margin-top:8px;max-width:var(--measure);}
 
@@ -173,7 +224,21 @@ const certs = t.certsSec;
   margin:0;padding:0;border:0;background:transparent;
 }
 .lightbox[open]{display:grid;place-items:center;}
-.lightbox::backdrop{background:rgba(15,15,15,0.9);}
+.lightbox::backdrop{
+  background:rgba(15,15,15,0.9);
+  animation:backdrop-in 0.25s var(--ease-soft);
+}
+/* The backdrop fades and the image scales up from 96% — a modal that simply
+   exists on the next frame is jarring in a way that is hard to name until
+   you see the alternative. Both are entrance-only: closing is instant,
+   because a dismissal the visitor has to wait out is worse than an abrupt
+   one. */
+@keyframes backdrop-in{from{opacity:0;}to{opacity:1;}}
+.lightbox[open] .lightbox-inner{animation:lightbox-in 0.32s var(--ease-out);}
+@keyframes lightbox-in{
+  from{opacity:0;transform:scale(0.96);}
+  to{opacity:1;transform:none;}
+}
 
 .lightbox-inner{
   position:relative;
@@ -209,6 +274,13 @@ const certs = t.certsSec;
 }
 @media(max-width:400px){
   .cert-grid{grid-template-columns:1fr;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .cert-shot:hover{transform:none;}
+  .cert-shot:hover img{transform:none;}
+  .cert-row:hover .cert-row-body{transform:none;}
+  .cert-more:not([hidden]),.lightbox[open] .lightbox-inner{animation:none;}
 }
 </style>
 
