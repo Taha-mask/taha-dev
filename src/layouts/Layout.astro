@@ -83,15 +83,40 @@ const canonicalUrl = lang === 'ar' ? arUrl : enUrl;
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- The ambient layer: grain plus two drifting auras, fixed behind every
+       section. Purely decorative and inert (aria-hidden, pointer-events:none,
+       z-index:-1), so it never reaches the accessibility tree or the pointer. -->
+  <div class="page-bg" aria-hidden="true">
+    <span class="aura aura-1"></span>
+    <span class="aura aura-2"></span>
+  </div>
+
   <slot />
 
   <script>
     /* ── Reveal on scroll ──
-       The site's only scroll-driven effect: a section fades the last 10px
-       into place once, then the observer forgets about it. No parallax, no
-       scroll hijacking, nothing that keeps running while you read.
-       prefers-reduced-motion is handled in CSS, which leaves .reveal fully
-       visible — so this still runs, it just has nothing to animate. */
+       A section rises the last 16px into place once, then the observer forgets
+       about it. No parallax, no scroll hijacking, nothing that keeps running
+       while you read. prefers-reduced-motion is handled in CSS, which leaves
+       .reveal fully visible — so this still runs, it just has nothing to
+       animate.
+
+       Two kinds of target:
+         .reveal        the element itself rises
+         .reveal-group  its children rise one after another
+       A group's children are given their delay the moment the group is
+       observed rather than in the callback, because by the time the callback
+       fires the transition has already been resolved for the frame. */
+    const STAGGER = 55;   // ms between siblings
+    const MAX_STAGGER = 6; // after six, everyone shares the last delay
+
+    const prepareGroup = (group: Element) => {
+      Array.from(group.children).forEach((child, i) => {
+        const step = Math.min(i, MAX_STAGGER);
+        (child as HTMLElement).style.setProperty('--reveal-delay', `${step * STAGGER}ms`);
+      });
+    };
+
     const revealObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
@@ -101,7 +126,10 @@ const canonicalUrl = lang === 'ar' ? arUrl : enUrl;
     }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
     const watchReveals = () => {
-      document.querySelectorAll('.reveal:not(.on)').forEach(el => revealObserver.observe(el));
+      document.querySelectorAll('.reveal:not(.on), .reveal-group:not(.on)').forEach(el => {
+        if (el.classList.contains('reveal-group')) prepareGroup(el);
+        revealObserver.observe(el);
+      });
     };
 
     /* Safety net. The hidden state only lifts when the observer delivers, and
@@ -109,7 +137,7 @@ const canonicalUrl = lang === 'ar' ? arUrl : enUrl;
        extension, a bug — would leave the page blank. Sweeping on load and once
        more shortly after means anything already on screen shows up regardless. */
     const sweepReveals = () => {
-      document.querySelectorAll('.reveal:not(.on)').forEach(el => {
+      document.querySelectorAll('.reveal:not(.on), .reveal-group:not(.on)').forEach(el => {
         if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('on');
       });
     };
@@ -119,6 +147,71 @@ const canonicalUrl = lang === 'ar' ? arUrl : enUrl;
     window.setTimeout(sweepReveals, 1200);
     // Support Astro view transitions if they are ever switched on.
     document.addEventListener('astro:page-load', watchReveals);
+
+    /* ── Scroll position ──
+       Two readers of the same scroll event, so there is exactly one listener
+       and one rAF on the page rather than one per feature:
+
+         1. the progress line along the bottom of the header
+         2. the header's own "scrolled" state, which is what stops the bar
+            from looking like it is floating over the hero at rest
+
+       Both write only a custom property or a class, so the handler itself
+       never reads layout — no forced reflow on scroll. */
+    const head = document.querySelector('.site-head');
+    const root = document.documentElement;
+    let ticking = false;
+
+    const onScrollFrame = () => {
+      ticking = false;
+      const max = root.scrollHeight - window.innerHeight;
+      const progress = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+      root.style.setProperty('--progress', String(progress));
+      head?.classList.toggle('scrolled', window.scrollY > 8);
+    };
+
+    const requestScrollFrame = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(onScrollFrame);
+    };
+
+    window.addEventListener('scroll', requestScrollFrame, { passive: true });
+    window.addEventListener('resize', requestScrollFrame, { passive: true });
+    onScrollFrame();
+
+    /* ── Scroll spy ──
+       Marks the nav link for whichever section the visitor is currently
+       reading. This is the one piece of motion on the page that is also
+       navigation: on a single-page site with eight sections, "where am I"
+       is a real question and the header is where the answer belongs.
+
+       The rootMargin box is a horizontal band across the upper-middle of the
+       viewport; a section is "current" while it crosses that band, which is a
+       far steadier reading than "whichever section is most visible". */
+    const spyTargets = document.querySelectorAll<HTMLElement>('section[id]');
+    const navLinks = document.querySelectorAll<HTMLAnchorElement>('.nav-links a[href^="#"]');
+
+    if (spyTargets.length && navLinks.length) {
+      const markCurrent = (id: string) => {
+        navLinks.forEach(link => {
+          const isCurrent = link.getAttribute('href') === `#${id}`;
+          link.classList.toggle('current', isCurrent);
+          // aria-current is the part a screen reader actually uses; the class
+          // is only what paints the marker.
+          if (isCurrent) link.setAttribute('aria-current', 'true');
+          else link.removeAttribute('aria-current');
+        });
+      };
+
+      const spy = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) markCurrent(entry.target.id);
+        });
+      }, { rootMargin: '-25% 0px -60% 0px' });
+
+      spyTargets.forEach(section => spy.observe(section));
+    }
   </script>
 </body>
 </html>

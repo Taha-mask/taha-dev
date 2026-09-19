@@ -68,18 +68,38 @@ const flutterSkills = t.skills.flutterSkills;
   align-items:center;gap:14px;
   padding:9px 0;
 }
-.skill-name{font-size:14.5px;color:var(--text-2);}
+.skill-name{
+  font-size:14.5px;color:var(--text-2);
+  transition:color var(--t-fast) var(--ease-soft);
+}
 
-.skill-track{height:2px;background:var(--surface-2);border-radius:2px;overflow:hidden;}
+.skill-track{
+  height:2px;background:var(--surface-2);border-radius:2px;overflow:hidden;
+  transition:height var(--t-mid) var(--ease-out);
+}
 .skill-fill{
   display:block;height:100%;width:0;
   background:var(--accent);opacity:0.65;
-  transition:width 0.9s cubic-bezier(0.22,1,0.36,1);
+  /* The fill is staggered per row by --fill-delay, set by the script below.
+     Fourteen bars all filling on the same frame is a loading screen; the same
+     fourteen dealt 60ms apart is a list being read out. */
+  transition:
+    width 0.95s var(--ease-out) var(--fill-delay,0ms),
+    opacity var(--t-mid) var(--ease-soft);
 }
 .skill-pct{
   font-family:var(--font-mono);font-size:11.5px;
   color:var(--text-3);text-align:end;
+  transition:color var(--t-fast) var(--ease-soft);
 }
+
+/* Hovering a row brings its name and figure up a step and thickens the bar
+   from 2px to 4px. A sparkline that answers the pointer is the cheapest way
+   to say "this is a list you can read down", rather than a static chart. */
+.skill:hover .skill-name{color:var(--text);}
+.skill:hover .skill-pct{color:var(--text-2);}
+.skill:hover .skill-track{height:4px;}
+.skill:hover .skill-fill{opacity:1;}
 
 @media(max-width:700px){
   .skill-cols{grid-template-columns:1fr;gap:32px;}
@@ -93,8 +113,14 @@ const flutterSkills = t.skills.flutterSkills;
 
   if (skillList) {
     const fill = () => {
-      document.querySelectorAll<HTMLElement>('.skill-fill').forEach(bar => {
-        bar.style.width = (bar.dataset.w || '0') + '%';
+      /* Per column, not per page: the two lists sit side by side, so counting
+         across both would leave the right-hand column waiting on the left
+         one's fourteen rows before it started. */
+      document.querySelectorAll<HTMLElement>('.skill-list').forEach(list => {
+        list.querySelectorAll<HTMLElement>('.skill-fill').forEach((bar, i) => {
+          bar.style.setProperty('--fill-delay', `${i * 60}ms`);
+          bar.style.width = (bar.dataset.w || '0') + '%';
+        });
       });
     };
 

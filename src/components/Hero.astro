@@ -3,21 +3,59 @@ import { getLangFromUrl, useTranslations } from '../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang)();
+
+/* The name is split here rather than in the browser, so the words arrive in
+   the HTML already wrapped. Splitting client-side would mean the h1 is
+   rewritten after first paint — a flash of unwrapped text, and a heading that
+   briefly does not exist for anything reading the document. */
+const nameWords = `${t.hero.firstName} ${t.hero.lastName}`.split(/\s+/).filter(Boolean);
+
+/* Each stat as a number and a suffix instead of one string, so the number can
+   be counted up to and the "+" stays put while it runs. */
+const stats = [
+  { value: 10, suffix: '+', label: t.hero.stats.projects },
+  { value: 3, suffix: '+', label: t.hero.stats.exp },
+  { value: 5, suffix: '+', label: t.hero.stats.clients },
+];
 ---
 <section class="hero" id="top">
-  <h1 class="hero-name">{t.hero.firstName} {t.hero.lastName}</h1>
-  <p class="hero-role">{t.hero.tag}</p>
-  <p class="hero-desc">{t.hero.desc}</p>
+  <!--
+    The name uncovers itself word by word: each word sits in a box that clips
+    its overflow, and rises into that box from underneath. 90ms apart, so on a
+    two-word name it reads as one gesture rather than two events.
+  -->
+  <h1 class="hero-name">
+    {nameWords.map((word, i) => (
+      <>
+        <span class="line-reveal" style={`--reveal-delay:${80 + i * 90}ms`}><span>{word}</span></span>
+        {i < nameWords.length - 1 && ' '}
+      </>
+    ))}
+  </h1>
 
-  <div class="hero-actions">
+  <!--
+    Everything below the name is already on screen at load, so it animates on
+    a timer rather than on scroll. The delays are cumulative and end at 520ms:
+    long enough to read as a sequence, short enough that a visitor who came to
+    read is never waiting on it.
+  -->
+  <p class="hero-role enter" style="--reveal-delay:280ms">{t.hero.tag}</p>
+  <p class="hero-desc enter" style="--reveal-delay:360ms">{t.hero.desc}</p>
+
+  <div class="hero-actions enter" style="--reveal-delay:440ms">
     <a href="#projects" class="btn btn-primary">{t.hero.viewProjects}</a>
     <a href="#contact" class="btn btn-ghost">{t.hero.letsTalk}</a>
   </div>
 
-  <dl class="hero-stats">
-    <div><dt dir="ltr">10+</dt><dd>{t.hero.stats.projects}</dd></div>
-    <div><dt dir="ltr">3+</dt><dd>{t.hero.stats.exp}</dd></div>
-    <div><dt dir="ltr">5+</dt><dd>{t.hero.stats.clients}</dd></div>
+  <dl class="hero-stats enter" style="--reveal-delay:520ms">
+    {stats.map(stat => (
+      <div class="stat">
+        <dt dir="ltr">
+          <span class="stat-num" data-count={stat.value}>{stat.value}</span>{stat.suffix}
+        </dt>
+        <dd>{stat.label}</dd>
+      </div>
+    ))}
   </dl>
 </section>
 
@@ -31,7 +69,11 @@ const t = useTranslations(lang)();
    It is deliberately the quietest hero possible: everything that used to
    live here (an IDE mock-up, drifting logos, blurred colour orbs, a
    typewriter cycling job titles) was motion and decoration competing with
-   the four lines that actually say something. */
+   the four lines that actually say something.
+
+   What it does now have is an entrance — which is a different thing from
+   decoration. Decoration keeps moving after you have arrived; an entrance
+   happens once, in the first second, and then the page is still. */
 .hero{
   padding-top:80px;
   padding-bottom:64px;
@@ -76,6 +118,18 @@ const t = useTranslations(lang)();
 }
 .hero-stats dd{font-size:13px;color:var(--text-3);margin-top:2px;}
 
+/* The counted digits are tabular so the number does not shuffle its own
+   width while it climbs from 0 to 10 — without this the "+" beside it
+   twitches sideways on every frame. */
+.stat-num{font-variant-numeric:tabular-nums;}
+
+/* Each stat answers the pointer on its own. Three separate hover targets is
+   what tells a visitor these are three facts rather than one paragraph. */
+.stat{transition:transform var(--t-mid) var(--ease-out);}
+.stat dt,.stat dd{transition:color var(--t-fast) var(--ease-soft);}
+.stat:hover{transform:translateY(-2px);}
+.stat:hover dd{color:var(--text-2);}
+
 @media(max-width:640px){
   .hero{padding-top:52px;padding-bottom:44px;}
   .hero-desc{font-size:16px;}
@@ -83,4 +137,54 @@ const t = useTranslations(lang)();
   .hero-actions .btn{flex:1;min-width:150px;}
   .hero-stats{gap:28px;margin-top:36px;}
 }
+
+@media (prefers-reduced-motion: reduce){
+  .stat:hover{transform:none;}
+}
 </style>
+
+<script>
+  /* ── Counting stats ──
+     The numbers climb to their value instead of being printed. They are
+     rendered at their final value in the HTML, so this only ever takes a
+     correct number and animates towards it — if the script never runs, or
+     bails below, the visitor still reads "10+".
+
+     Deliberately short (900ms) and eased to a stop: a counter that takes
+     three seconds stops being a detail and becomes something you wait for. */
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const counters = document.querySelectorAll<HTMLElement>('.stat-num[data-count]');
+
+  if (counters.length && !reduced) {
+    const DURATION = 900;
+
+    const countUp = (el: HTMLElement) => {
+      const target = Number(el.dataset.count);
+      if (!Number.isFinite(target)) return;
+
+      const start = performance.now();
+      const step = (now: number) => {
+        const progress = Math.min((now - start) / DURATION, 1);
+        // Same curve as --ease-out: quick off the mark, long settle.
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = String(Math.round(target * eased));
+        if (progress < 1) requestAnimationFrame(step);
+      };
+
+      requestAnimationFrame(step);
+    };
+
+    /* Held until the row is on screen and, because the row arrives on a
+       520ms entrance delay, until that entrance has actually started. */
+    const statRow = document.querySelector('.hero-stats');
+    if (statRow) {
+      const statObserver = new IntersectionObserver((entries, observer) => {
+        if (!entries[0].isIntersecting) return;
+        observer.disconnect();
+        window.setTimeout(() => counters.forEach(countUp), 560);
+      }, { threshold: 0.4 });
+
+      statObserver.observe(statRow);
+    }
+  }
+</script>

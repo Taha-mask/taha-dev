@@ -40,13 +40,37 @@ const edu = t.educationSec;
 .entry-list{list-style:none;}
 
 .entry{
+  position:relative;
   display:grid;gap:4px 32px;
   padding:20px 0;
   border-top:1px solid var(--border);
+  transition:border-color var(--t-mid) var(--ease-soft);
 }
 .entry:last-child{border-bottom:1px solid var(--border);}
 @media(min-width:640px){
   .entry{grid-template-columns:160px 1fr;}
+}
+
+/* Same hover grammar as the project rows and the About facts: the content
+   nudges, the date lifts to full strength, a short accent tick appears in the
+   margin. Three sections using one gesture is what makes the page feel like
+   one object rather than a stack of components. */
+.entry-period,.entry-body{transition:transform var(--t-mid) var(--ease-out),color var(--t-mid) var(--ease-soft);}
+.entry::before{
+  content:'';position:absolute;
+  inset-inline-start:-12px;top:27px;
+  width:0;height:1px;background:var(--accent);
+  transition:width var(--t-mid) var(--ease-out);
+}
+.entry:hover{border-color:var(--border-strong);}
+.entry:hover::before{width:8px;}
+.entry:hover .entry-period{color:var(--text-2);}
+.entry:hover .entry-period,.entry:hover .entry-body{transform:translateX(var(--nudge));}
+:global([dir="rtl"]) .entry:hover .entry-period,
+:global([dir="rtl"]) .entry:hover .entry-body{transform:translateX(calc(var(--nudge) * -1));}
+
+@media (prefers-reduced-motion: reduce){
+  .entry:hover .entry-period,.entry:hover .entry-body{transform:none;}
 }
 
 /* Held on the baseline of the title next to it rather than centred in its
